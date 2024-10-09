@@ -1,6 +1,9 @@
 # 프로젝트 마일스톤 
 https://github.com/users/jaykang-heo/projects/2
 
+# API 명세
+[API 명세.md](docs/API%20%EB%AA%85%EC%84%B8.md)
+
 # Sequence Diagram
 - [결제.md](docs/%EA%B2%B0%EC%A0%9C.md)
 - [대기열.md](docs/%EB%8C%80%EA%B8%B0%EC%97%B4.md)
