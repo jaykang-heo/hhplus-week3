@@ -13,3 +13,32 @@ https://github.com/users/jaykang-heo/projects/2
 # ERD
 ![img.png](docs/img.png)
 [ERD 원문](docs/ERD.md)
+
+# 프로젝트 설명
+- 설명: 콘서트 예약 서비스에 필요한 기능을 제공합니다
+- 기술 스택:
+    - 서비스
+        - Spring Boot 3.3.4
+        - Java 17
+        - Spring JPA
+        - Spring Web
+    - 테스트 & 유틸
+        - H2
+        - mockito
+        - mockk
+        - Spring Boot Webflux
+        - ktlint 11.3.1
+    - 아키텍처: Clean + Layered Architecture
+        - api
+            - request
+            - response
+        - application
+        - domain
+            - model
+            - command
+            - query
+            - validator
+            - service
+        - repository
+            - jpa
+            - model
