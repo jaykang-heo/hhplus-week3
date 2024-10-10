@@ -16,7 +16,7 @@ import java.time.Instant
 import java.util.UUID
 
 @RestController
-@RequestMapping("/queue")
+@RequestMapping("/api/v1/queues")
 class QueueController {
 
     @Operation(summary = "토큰 발급", description = "인증을 위한 새 토큰을 발급합니다")
@@ -30,7 +30,7 @@ class QueueController {
             ApiResponse(responseCode = "500", description = "토큰 발급 오류")
         ]
     )
-    @PostMapping("/issue/token")
+    @PostMapping("/tokens")
     fun issueToken(): IssueTokenResponse {
         return IssueTokenResponse(
             UUID.randomUUID().toString()
@@ -49,7 +49,7 @@ class QueueController {
             ApiResponse(responseCode = "500", description = "대기열 정보 조회 오류")
         ]
     )
-    @GetMapping("/info")
+    @GetMapping
     fun getQueueInfo(
         @RequestHeader("Authorization") authHeader: String
     ): GetQueueInfoResponse {

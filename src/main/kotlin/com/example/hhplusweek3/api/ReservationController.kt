@@ -10,19 +10,21 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import java.util.UUID
 import kotlin.random.Random
 
 @RestController
-@RequestMapping("/reservation")
+@RequestMapping("/api/v1/reservations")
 class ReservationController {
 
     @Operation(summary = "사용 가능한 좌석 찾기", description = "주어진 날짜에 대해 사용 가능한 좌석을 검색합니다")
@@ -37,8 +39,8 @@ class ReservationController {
             ApiResponse(responseCode = "500", description = "서버 오류")
         ]
     )
-    @GetMapping("/available/seats")
-    fun findAvailableSeats(
+    @GetMapping("/seats")
+    fun getAvailableSeats(
         @RequestParam("dateUtc") dateUtc: Instant
     ): FindAvailableSeatsResponse {
         return FindAvailableSeatsResponse(
@@ -63,8 +65,8 @@ class ReservationController {
             ApiResponse(responseCode = "500", description = "서버 오류")
         ]
     )
-    @GetMapping("/available/dates")
-    fun findAvailableDates(): FindAvailableDatesResponse {
+    @GetMapping("/dates")
+    fun getAvailableDates(): FindAvailableDatesResponse {
         return FindAvailableDatesResponse(
             (1..5).map { Instant.now() },
             (1..10).map { Instant.now() }
@@ -84,7 +86,8 @@ class ReservationController {
             ApiResponse(responseCode = "500", description = "서버 오류")
         ]
     )
-    @PostMapping("/reserve")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     fun reserve(
         @RequestBody request: ReserveRequest,
         @RequestHeader("Authorization") authorization: String
