@@ -35,7 +35,8 @@ CREATE INDEX idx_pay_histories_reserve_id ON pay_histories(reserve_id);
 
 CREATE TABLE queues (
         id BIGINT PRIMARY KEY AUTO_INCREMENT,
-        user_id VARCHAR(255) NOT NULL,
+        token CHAR(36) NOT NULL,
+        user_id CHAR(36) NOT NULL,
         status ENUM('PENDING', 'ACTIVATED', 'EXPIRED') NOT NULL,
         expired_at_utc TIMESTAMP NOT NULL,
         created_at_utc TIMESTAMP NOT NULL,

@@ -49,7 +49,8 @@ Table pay_histories {
 
 Table queues {
   id BIGINT [pk, increment]
-  user_id VARCHAR(255) [not null]
+  token CHAR(36) [not null]
+  user_id CHAR(36) [not null]
   status ENUM('PENDING', 'ACTIVATED', 'EXPIRED') [not null]
   expired_at_utc TIMESTAMP [not null]
   created_at_utc TIMESTAMP [not null]
