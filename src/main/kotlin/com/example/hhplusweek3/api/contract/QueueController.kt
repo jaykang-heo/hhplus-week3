@@ -1,4 +1,4 @@
-package com.example.hhplusweek3.api
+package com.example.hhplusweek3.api.contract
 
 import com.example.hhplusweek3.api.response.GetQueueInfoResponse
 import com.example.hhplusweek3.api.response.IssueTokenResponse
@@ -7,18 +7,9 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import java.time.Instant
-import java.util.UUID
 
-@RestController
-@RequestMapping("/api/v1/queues")
-class QueueController {
-
+interface QueueController {
     @Operation(summary = "토큰 발급", description = "인증을 위한 새 토큰을 발급합니다")
     @ApiResponses(
         value = [
@@ -30,12 +21,7 @@ class QueueController {
             ApiResponse(responseCode = "500", description = "토큰 발급 오류")
         ]
     )
-    @PostMapping("/tokens")
-    fun issueToken(): IssueTokenResponse {
-        return IssueTokenResponse(
-            UUID.randomUUID().toString()
-        )
-    }
+    fun issueToken(): IssueTokenResponse
 
     @Operation(summary = "대기열 정보 조회", description = "현재 대기열 상태에 대한 정보를 조회합니다")
     @ApiResponses(
@@ -49,15 +35,7 @@ class QueueController {
             ApiResponse(responseCode = "500", description = "대기열 정보 조회 오류")
         ]
     )
-    @GetMapping
     fun getQueueInfo(
         @RequestHeader("Authorization") authHeader: String
-    ): GetQueueInfoResponse {
-        return GetQueueInfoResponse(
-            UUID.randomUUID().toString(),
-            1,
-            100,
-            Instant.now()
-        )
-    }
+    ): GetQueueInfoResponse
 }
