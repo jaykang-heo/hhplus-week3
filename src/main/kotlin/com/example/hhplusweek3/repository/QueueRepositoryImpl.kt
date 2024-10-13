@@ -32,4 +32,12 @@ class QueueRepositoryImpl(
             }
         queueEntityJpaRepository.saveAll(expiredQueues)
     }
+
+    override fun getByToken(token: String): Queue {
+        return queueEntityJpaRepository.findByToken(token)!!.toModel()
+    }
+
+    override fun findByToken(token: String): Queue? {
+        return queueEntityJpaRepository.findByToken(token)?.toModel()
+    }
 }

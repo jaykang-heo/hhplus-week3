@@ -3,8 +3,10 @@ package com.example.hhplusweek3.api
 import com.example.hhplusweek3.api.contract.QueueController
 import com.example.hhplusweek3.api.response.GetQueueInfoResponse
 import com.example.hhplusweek3.api.response.IssueTokenResponse
+import com.example.hhplusweek3.api.response.QueueResponse
 import com.example.hhplusweek3.application.QueueFacade
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
+import com.example.hhplusweek3.domain.query.GetQueueQuery
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,6 +27,8 @@ class QueueControllerImpl(
 
     @GetMapping
     override fun getQueueInfo(authHeader: String): GetQueueInfoResponse {
-        TODO("Not yet implemented")
+        val query = GetQueueQuery(authHeader)
+        val queue = queueFacade.get(query)
+        return GetQueueInfoResponse(QueueResponse(queue))
     }
 }

@@ -1,17 +1,21 @@
 package com.example.hhplusweek3.application
 
+import com.example.hhplusweek3.domain.GetQueueQueryValidator
 import com.example.hhplusweek3.domain.IssueQueueTokenCommandValidator
 import com.example.hhplusweek3.domain.QueueService
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.port.QueueRepository
+import com.example.hhplusweek3.domain.query.GetQueueQuery
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class QueueFacade(
     private val queueService: QueueService,
     private val queueRepository: QueueRepository,
-    private val issueQueueTokenCommandValidator: IssueQueueTokenCommandValidator
+    private val issueQueueTokenCommandValidator: IssueQueueTokenCommandValidator,
+    private val getQueueQueryValidator: GetQueueQueryValidator
 ) {
 
     fun issue(command: IssueQueueTokenCommand): Queue {
@@ -19,5 +23,13 @@ class QueueFacade(
         queueService.expireBeforeTime(queue.createdTimeUtc)
         issueQueueTokenCommandValidator.validate(command)
         return queueRepository.save(queue)
+    }
+
+    fun get(query: GetQueueQuery): Queue {
+        val now = Instant.now()
+        query.validate()
+        queueService.expireBeforeTime(now)
+        getQueueQueryValidator.validate(query)
+        return queueRepository.getByToken(query.token)
     }
 }

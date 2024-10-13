@@ -7,4 +7,6 @@ interface QueueRepository {
     fun save(queue: Queue): Queue
     fun findAllByActiveAndBeforeTime(time: Instant): List<Queue>
     fun changeStatusToExpire(tokens: List<String>)
+    fun getByToken(token: String): Queue
+    fun findByToken(token: String): Queue?
 }
