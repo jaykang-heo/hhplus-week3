@@ -7,8 +7,6 @@ import com.example.hhplusweek3.api.response.QueueResponse
 import com.example.hhplusweek3.application.QueueFacade
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.query.GetQueueQuery
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -18,14 +16,12 @@ class QueueControllerImpl(
     private val queueFacade: QueueFacade
 ) : QueueController {
 
-    @PostMapping("/tokens")
     override fun issueToken(): IssueTokenResponse {
         val command = IssueQueueTokenCommand()
         val queue = queueFacade.issue(command)
         return IssueTokenResponse(queue.token)
     }
 
-    @GetMapping
     override fun getQueueInfo(authHeader: String): GetQueueInfoResponse {
         val query = GetQueueQuery(authHeader)
         val queue = queueFacade.get(query)

@@ -1,6 +1,6 @@
 package com.example.hhplusweek3.api.response
 
-data class ChargeBalanceResponse(
+data class GetWalletBalanceResponse(
     val userId: String,
     val balance: Long
 )

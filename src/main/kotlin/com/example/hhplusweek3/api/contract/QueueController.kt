@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
 interface QueueController {
@@ -21,6 +23,7 @@ interface QueueController {
             ApiResponse(responseCode = "500", description = "토큰 발급 오류")
         ]
     )
+    @PostMapping("/tokens")
     fun issueToken(): IssueTokenResponse
 
     @Operation(summary = "대기열 정보 조회", description = "현재 대기열 상태에 대한 정보를 조회합니다")
@@ -35,6 +38,7 @@ interface QueueController {
             ApiResponse(responseCode = "500", description = "대기열 정보 조회 오류")
         ]
     )
+    @GetMapping
     fun getQueueInfo(
         @RequestHeader("Authorization") authHeader: String
     ): GetQueueInfoResponse

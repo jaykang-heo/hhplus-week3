@@ -9,4 +9,5 @@ interface ReservationRepository {
     fun findAllByOrderNumberIsNullAndBeforeDate(dateUtc: Instant): List<Reservation>
     fun deleteAllByReservationIds(reservationIds: List<String>)
     fun findByToken(token: String): Reservation?
+    fun findAllByDate(dateUtc: Instant): List<Reservation>
 }

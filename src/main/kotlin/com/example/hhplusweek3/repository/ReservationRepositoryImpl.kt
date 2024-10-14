@@ -32,4 +32,8 @@ class ReservationRepositoryImpl(
     override fun findByToken(token: String): Reservation? {
         return reservationJpaRepository.findByQueueToken(token)?.toModel()
     }
+
+    override fun findAllByDate(dateUtc: Instant): List<Reservation> {
+        return reservationJpaRepository.findAllByReservedDateUtc(dateUtc).map { it.toModel() }
+    }
 }

@@ -2,7 +2,7 @@ package com.example.hhplusweek3.domain.validator
 
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
-import com.example.hhplusweek3.domain.port.ConcertRepository
+import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import org.springframework.stereotype.Component
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 class CreateReservationCommandValidator(
     private val reservationRepository: ReservationRepository,
     private val queueRepository: QueueRepository,
-    private val concertRepository: ConcertRepository
+    private val concertSeatRepository: ConcertSeatRepository
 ) {
 
     fun validate(command: CreateReservationCommand) {
@@ -23,7 +23,7 @@ class CreateReservationCommandValidator(
             throw RuntimeException("queue status must be active ${queue.status}")
         }
 
-        val isExists = concertRepository.existsByDateAndSeatNumber(command.dateUtc, command.seatNumber)
+        val isExists = concertSeatRepository.existsByDateAndSeatNumber(command.dateUtc, command.seatNumber)
         if (!isExists) {
             throw RuntimeException("concert by date ${command.dateUtc} and seat number ${command.seatNumber} not found")
         }

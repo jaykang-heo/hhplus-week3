@@ -1,9 +1,7 @@
 package com.example.hhplusweek3.repository.model
 
-import com.example.hhplusweek3.domain.model.ConcertSeatStatus
+import com.example.hhplusweek3.domain.model.ConcertSeat
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -16,9 +14,12 @@ class ConcertSeatEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
-    val concertDateUtc: Instant,
-    @Enumerated(EnumType.STRING)
-    val status: ConcertSeatStatus,
-    val createdTimeUtc: Instant,
-    val updatedTimeUtc: Instant
-)
+    val name: String,
+    val dateUtc: Instant,
+    val seatNumber: Long
+) {
+    fun toModel(): ConcertSeat = ConcertSeat(
+        dateUtc,
+        seatNumber
+    )
+}

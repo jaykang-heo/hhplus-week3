@@ -4,7 +4,7 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
-import com.example.hhplusweek3.domain.port.ConcertRepository
+import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -16,10 +16,10 @@ import java.time.Instant
 
 class CreateReservationCommandValidatorTest {
 
-    private val mockConcertRepository = mock(ConcertRepository::class.java)
+    private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val mockReservationRepository = mock(ReservationRepository::class.java)
-    private val sut = CreateReservationCommandValidator(mockReservationRepository, mockQueueRepository, mockConcertRepository)
+    private val sut = CreateReservationCommandValidator(mockReservationRepository, mockQueueRepository, mockConcertSeatRepository)
 
     @Test
     @DisplayName("대기열이 존재하지 않는다면 에러를 반환한다")
@@ -58,7 +58,7 @@ class CreateReservationCommandValidatorTest {
         val command = CreateReservationCommand("token", 1L, date)
         val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
         `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
-        `when`(mockConcertRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(false)
+        `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(false)
 
         // when & then
         val exception = assertThrows(RuntimeException::class.java) {
@@ -75,7 +75,7 @@ class CreateReservationCommandValidatorTest {
         val command = CreateReservationCommand("token", 1L, date)
         val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
         `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
-        `when`(mockConcertRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
+        `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
         `when`(mockReservationRepository.findReservationBySeatNumberAndDate(date, 1L)).thenReturn(Reservation(command))
 
         // when & then
@@ -94,7 +94,7 @@ class CreateReservationCommandValidatorTest {
         val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
         val existingReservation = Reservation(CreateReservationCommand("token", 2L, date))
         `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
-        `when`(mockConcertRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
+        `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
         `when`(mockReservationRepository.findReservationBySeatNumberAndDate(date, 1L)).thenReturn(null)
         `when`(mockReservationRepository.findByToken("token")).thenReturn(existingReservation)
 

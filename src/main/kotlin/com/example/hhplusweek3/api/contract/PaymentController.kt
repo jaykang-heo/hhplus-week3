@@ -1,4 +1,4 @@
-package com.example.hhplusweek3.api
+package com.example.hhplusweek3.api.contract
 
 import PayRequest
 import com.example.hhplusweek3.api.response.PayResponse
@@ -11,14 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
-@RestController
-@RequestMapping("/api/v1")
-class PaymentController {
-
+interface PaymentController {
     @Operation(summary = "결제 처리", description = "결제 요청을 처리하고 거래 세부 정보를 반환합니다")
     @ApiResponses(
         value = [
@@ -38,10 +32,5 @@ class PaymentController {
         @Parameter(description = "인증 헤더")
         @RequestHeader("Authorization")
         authHeader: String
-    ): PayResponse {
-        return PayResponse(
-            UUID.randomUUID().toString(),
-            UUID.randomUUID().toString()
-        )
-    }
+    ): PayResponse
 }
