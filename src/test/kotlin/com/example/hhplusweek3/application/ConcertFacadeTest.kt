@@ -95,4 +95,69 @@ class ConcertFacadeTest {
         assertEquals(listOf(ConcertSeat(now, 2L), ConcertSeat(now, 3L)), result.availableSeats)
         assertEquals(allSeats, result.allSeats)
     }
+
+    @Test
+    @DisplayName("모든 날짜가 예약되었다면 예약 가능한 날짜는 빈 값으로 반환한다")
+    fun `when all dates are reserved, then available dates list return empty`() {
+        // given
+        val now = Instant.now()
+        val allSeats = listOf(
+            ConcertSeat(now, 1L),
+            ConcertSeat(now.plusSeconds(86400), 1L)
+        )
+        val reservedSeats = listOf(
+            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, now, now, now.plusSeconds(300)),
+            Reservation(UUID.randomUUID().toString(), null, "token2", now.plusSeconds(86400), 1L, now, now, now.plusSeconds(300))
+        )
+
+        `when`(mockReservationRepository.findAll()).thenReturn(reservedSeats)
+        `when`(mockConcertSeatRepository.findAll()).thenReturn(allSeats)
+
+        // when
+        val result = sut.findAvailableDates()
+
+        // then
+        assertTrue(result.availableDates.isEmpty())
+        assertEquals(allSeats.map { it.dateUtc }, result.allDates)
+    }
+
+    @Test
+    @DisplayName("예약 가능한 날짜가 있다면, 예약 가능한 날짜를 반환한다")
+    fun `when there are available dates, then return available dates list`() {
+        // given
+        val now = Instant.now()
+        val allSeats = listOf(
+            ConcertSeat(now, 1L),
+            ConcertSeat(now.plusSeconds(86400), 2L),
+            ConcertSeat(now.plusSeconds(172800), 3L)
+        )
+        val reservedSeats = listOf(
+            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, now, now, now.plusSeconds(300))
+        )
+
+        `when`(mockReservationRepository.findAll()).thenReturn(reservedSeats)
+        `when`(mockConcertSeatRepository.findAll()).thenReturn(allSeats)
+
+        // when
+        val result = sut.findAvailableDates()
+
+        // then
+        assertEquals(listOf(now.plusSeconds(86400), now.plusSeconds(172800)), result.availableDates)
+        assertEquals(listOf(now, now.plusSeconds(86400), now.plusSeconds(172800)), result.allDates)
+    }
+
+    @Test
+    @DisplayName("콘서트 좌석이 없다면, 빈 리스트를 반환한다")
+    fun `when there are no concert seats, then return empty lists`() {
+        // given
+        `when`(mockReservationRepository.findAll()).thenReturn(emptyList())
+        `when`(mockConcertSeatRepository.findAll()).thenReturn(emptyList())
+
+        // when
+        val result = sut.findAvailableDates()
+
+        // then
+        assertTrue(result.availableDates.isEmpty())
+        assertTrue(result.allDates.isEmpty())
+    }
 }

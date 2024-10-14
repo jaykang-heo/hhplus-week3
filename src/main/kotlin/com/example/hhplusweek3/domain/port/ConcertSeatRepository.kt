@@ -7,4 +7,5 @@ interface ConcertSeatRepository {
     fun existsByDateAndSeatNumber(dateUtc: Instant, seatNumber: Long): Boolean
     fun existsByDate(dateUtc: Instant): Boolean
     fun findByDate(dateUtc: Instant): List<ConcertSeat>
+    fun findAll(): List<ConcertSeat>
 }

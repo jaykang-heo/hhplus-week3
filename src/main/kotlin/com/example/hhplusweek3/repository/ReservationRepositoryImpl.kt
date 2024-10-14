@@ -36,4 +36,8 @@ class ReservationRepositoryImpl(
     override fun findAllByDate(dateUtc: Instant): List<Reservation> {
         return reservationJpaRepository.findAllByReservedDateUtc(dateUtc).map { it.toModel() }
     }
+
+    override fun findAll(): List<Reservation> {
+        return reservationJpaRepository.findAll().map { it.toModel() }
+    }
 }

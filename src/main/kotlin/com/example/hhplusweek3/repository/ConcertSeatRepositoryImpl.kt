@@ -21,4 +21,8 @@ class ConcertSeatRepositoryImpl(
     override fun findByDate(dateUtc: Instant): List<ConcertSeat> {
         return concertSeatEntityJpaRepository.findAllByDateUtc(dateUtc).map { it.toModel() }
     }
+
+    override fun findAll(): List<ConcertSeat> {
+        return concertSeatEntityJpaRepository.findAll().map { it.toModel() }
+    }
 }

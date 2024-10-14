@@ -42,5 +42,5 @@ interface ConcertController {
         ]
     )
     @GetMapping("/dates")
-    fun getAvailableDates(): FindAvailableDatesResponse
+    fun findAvailableDates(): FindAvailableDatesResponse
 }

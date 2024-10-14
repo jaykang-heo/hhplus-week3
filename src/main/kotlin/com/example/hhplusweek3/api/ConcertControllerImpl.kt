@@ -22,7 +22,8 @@ class ConcertControllerImpl(
         return FindAvailableSeatsResponse(ConcertResponse(concert))
     }
 
-    override fun getAvailableDates(): FindAvailableDatesResponse {
-        TODO("Not yet implemented")
+    override fun findAvailableDates(): FindAvailableDatesResponse {
+        val concert = concertFacade.findAvailableDates()
+        return FindAvailableDatesResponse(concert.availableDates, concert.allDates)
     }
 }
