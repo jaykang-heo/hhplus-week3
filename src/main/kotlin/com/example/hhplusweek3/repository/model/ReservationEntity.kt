@@ -15,10 +15,11 @@ class ReservationEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
     val reservationId: String,
-    val orderNumber: String?,
+    val paymentId: String?,
     val queueToken: String,
     val reservedSeatNumber: Long,
     val reservedDateUtc: Instant,
+    val amount: Long,
     val createdTimeUtc: Instant,
     val updatedTimeUtc: Instant,
     val expirationTimeUtc: Instant
@@ -26,10 +27,11 @@ class ReservationEntity(
     fun toModel(): Reservation {
         return Reservation(
             reservationId,
-            orderNumber,
+            paymentId,
             queueToken,
             reservedDateUtc,
             reservedSeatNumber,
+            amount,
             createdTimeUtc,
             updatedTimeUtc,
             expirationTimeUtc
@@ -39,10 +41,11 @@ class ReservationEntity(
     constructor(reservation: Reservation) : this(
         0,
         reservation.reservationId,
-        reservation.orderNumber,
+        reservation.paymentId,
         reservation.queueToken,
         reservation.reservedSeat,
         reservation.dateTimeUtc,
+        reservation.amount,
         reservation.createdTimeUtc,
         reservation.updatedTimeUtc,
         reservation.expirationTimeUtc

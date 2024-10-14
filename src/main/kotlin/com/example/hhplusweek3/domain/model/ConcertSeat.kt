@@ -4,5 +4,6 @@ import java.time.Instant
 
 data class ConcertSeat(
     val dateUtc: Instant,
-    val seatNumber: Long
+    val seatNumber: Long,
+    val amount: Long
 )

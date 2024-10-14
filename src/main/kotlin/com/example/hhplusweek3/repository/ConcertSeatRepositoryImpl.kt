@@ -25,4 +25,8 @@ class ConcertSeatRepositoryImpl(
     override fun findAll(): List<ConcertSeat> {
         return concertSeatEntityJpaRepository.findAll().map { it.toModel() }
     }
+
+    override fun getByDateAndSeatNumber(dateUtc: Instant, seatNumber: Long): ConcertSeat {
+        return concertSeatEntityJpaRepository.findByDateUtcAndSeatNumber(dateUtc, seatNumber)!!.toModel()
+    }
 }

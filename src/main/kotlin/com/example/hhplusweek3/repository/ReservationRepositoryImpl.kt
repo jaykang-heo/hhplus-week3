@@ -22,7 +22,7 @@ class ReservationRepositoryImpl(
     }
 
     override fun findAllByOrderNumberIsNullAndBeforeDate(dateUtc: Instant): List<Reservation> {
-        return reservationJpaRepository.findAllByOrderNumberIsNullAndExpirationTimeUtcIsBefore(dateUtc).map { it.toModel() }
+        return reservationJpaRepository.findAllByReservationIdIsNullAndExpirationTimeUtcIsBefore(dateUtc).map { it.toModel() }
     }
 
     override fun deleteAllByReservationIds(reservationIds: List<String>) {
@@ -39,5 +39,13 @@ class ReservationRepositoryImpl(
 
     override fun findAll(): List<Reservation> {
         return reservationJpaRepository.findAll().map { it.toModel() }
+    }
+
+    override fun findByTokenAndReservationId(token: String, reservationId: String): Reservation? {
+        return reservationJpaRepository.findByReservationIdAndQueueToken(reservationId, token)?.toModel()
+    }
+
+    override fun getByTokenAndReservationId(token: String, reservationId: String): Reservation {
+        return reservationJpaRepository.findByReservationIdAndQueueToken(reservationId, token)!!.toModel()
     }
 }

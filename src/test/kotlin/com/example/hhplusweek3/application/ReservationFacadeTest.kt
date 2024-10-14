@@ -1,7 +1,9 @@
 package com.example.hhplusweek3.application
 
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
+import com.example.hhplusweek3.domain.model.ConcertSeat
 import com.example.hhplusweek3.domain.model.Reservation
+import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.QueueService
 import com.example.hhplusweek3.domain.service.ReservationService
@@ -26,7 +28,8 @@ class ReservationFacadeTest {
     private val mockQueueService = mock(QueueService::class.java)
     private val mockReservationService = mock(ReservationService::class.java)
     private val mockCreateReservationCommandValidator = mock(CreateReservationCommandValidator::class.java)
-    private val sut = ReservationFacade(mockReservationRepository, mockQueueService, mockReservationService, mockCreateReservationCommandValidator)
+    private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
+    private val sut = ReservationFacade(mockReservationRepository, mockConcertSeatRepository, mockQueueService, mockReservationService, mockCreateReservationCommandValidator)
 
     @Test
     @DisplayName("예약 생성 작업 중 대기열 선행 작업이 실패했을때, 실행을 멈춘다")
@@ -99,8 +102,10 @@ class ReservationFacadeTest {
         val seatNumber = Random.nextLong()
         val dateUtc = Instant.now().plusSeconds(10)
         val command = CreateReservationCommand(token, seatNumber, dateUtc)
-        val expectedReservation = Reservation(command)
+        val amount = 100L
+        val expectedReservation = Reservation(command, amount)
         `when`(mockReservationRepository.save(any())).thenReturn(expectedReservation)
+        `when`(mockConcertSeatRepository.getByDateAndSeatNumber(dateUtc, seatNumber)).thenReturn(ConcertSeat(Instant.now(), 100L, 100L))
 
         // when
         val result = sut.reserve(command)

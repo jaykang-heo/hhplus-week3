@@ -11,4 +11,6 @@ interface ReservationRepository {
     fun findByToken(token: String): Reservation?
     fun findAllByDate(dateUtc: Instant): List<Reservation>
     fun findAll(): List<Reservation>
+    fun findByTokenAndReservationId(token: String, reservationId: String): Reservation?
+    fun getByTokenAndReservationId(token: String, reservationId: String): Reservation
 }

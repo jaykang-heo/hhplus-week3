@@ -39,20 +39,22 @@ class ReservationServiceTest {
         val now = Instant.now()
         val expiredReservation1 = Reservation(
             reservationId = UUID.randomUUID().toString(),
-            orderNumber = null,
+            paymentId = null,
             queueToken = "token1",
             dateTimeUtc = now.minusSeconds(3600),
             reservedSeat = 1L,
+            amount = 100L,
             createdTimeUtc = now.minusSeconds(7200),
             updatedTimeUtc = now.minusSeconds(7200),
             expirationTimeUtc = now.minusSeconds(3600)
         )
         val expiredReservation2 = Reservation(
             reservationId = UUID.randomUUID().toString(),
-            orderNumber = null,
+            paymentId = null,
             queueToken = "token2",
             dateTimeUtc = now.minusSeconds(3600),
             reservedSeat = 2L,
+            amount = 100L,
             createdTimeUtc = now.minusSeconds(7200),
             updatedTimeUtc = now.minusSeconds(7200),
             expirationTimeUtc = now.minusSeconds(3600)

@@ -16,10 +16,12 @@ class ConcertSeatEntity(
     val id: Long,
     val name: String,
     val dateUtc: Instant,
-    val seatNumber: Long
+    val seatNumber: Long,
+    val amount: Long
 ) {
     fun toModel(): ConcertSeat = ConcertSeat(
         dateUtc,
-        seatNumber
+        seatNumber,
+        amount
     )
 }

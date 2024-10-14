@@ -76,7 +76,7 @@ class CreateReservationCommandValidatorTest {
         val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
         `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
         `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
-        `when`(mockReservationRepository.findReservationBySeatNumberAndDate(date, 1L)).thenReturn(Reservation(command))
+        `when`(mockReservationRepository.findReservationBySeatNumberAndDate(date, 1L)).thenReturn(Reservation(command, 100L))
 
         // when & then
         val exception = assertThrows(RuntimeException::class.java) {
@@ -92,7 +92,7 @@ class CreateReservationCommandValidatorTest {
         val date = Instant.now().plusSeconds(3600)
         val command = CreateReservationCommand("token", 1L, date)
         val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
-        val existingReservation = Reservation(CreateReservationCommand("token", 2L, date))
+        val existingReservation = Reservation(CreateReservationCommand("token", 2L, date), 100L)
         `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
         `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
         `when`(mockReservationRepository.findReservationBySeatNumberAndDate(date, 1L)).thenReturn(null)

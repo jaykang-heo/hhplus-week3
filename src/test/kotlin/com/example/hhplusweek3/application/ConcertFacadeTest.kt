@@ -49,14 +49,14 @@ class ConcertFacadeTest {
         val now = Instant.now()
         val query = FindAvailableConcertSeatsQuery(now)
         val allSeats = listOf(
-            ConcertSeat(now, 1L),
-            ConcertSeat(now, 2L),
-            ConcertSeat(now, 3L)
+            ConcertSeat(now, 1L, 100L),
+            ConcertSeat(now, 2L, 100L),
+            ConcertSeat(now, 3L, 100L)
         )
         val reservedSeats = listOf(
-            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, now, now, now.plusSeconds(300)),
-            Reservation(UUID.randomUUID().toString(), null, "token2", now, 2L, now, now, now.plusSeconds(300)),
-            Reservation(UUID.randomUUID().toString(), null, "token3", now, 3L, now, now, now.plusSeconds(300))
+            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, 100L, now, now, now.plusSeconds(300)),
+            Reservation(UUID.randomUUID().toString(), null, "token2", now, 2L, 100L, now, now, now.plusSeconds(300)),
+            Reservation(UUID.randomUUID().toString(), null, "token3", now, 3L, 100L, now, now, now.plusSeconds(300))
         )
 
         `when`(mockReservationRepository.findAllByDate(query.dateUtc)).thenReturn(reservedSeats)
@@ -77,12 +77,12 @@ class ConcertFacadeTest {
         val now = Instant.now()
         val query = FindAvailableConcertSeatsQuery(now)
         val allSeats = listOf(
-            ConcertSeat(now, 1L),
-            ConcertSeat(now, 2L),
-            ConcertSeat(now, 3L)
+            ConcertSeat(now, 1L, 100L),
+            ConcertSeat(now, 2L, 100L),
+            ConcertSeat(now, 3L, 100L)
         )
         val reservedSeats = listOf(
-            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, now, now, now.plusSeconds(300))
+            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, 100L, now, now, now.plusSeconds(300))
         )
 
         `when`(mockReservationRepository.findAllByDate(query.dateUtc)).thenReturn(reservedSeats)
@@ -92,7 +92,7 @@ class ConcertFacadeTest {
         val result = sut.findAvailableSeats(query)
 
         // then
-        assertEquals(listOf(ConcertSeat(now, 2L), ConcertSeat(now, 3L)), result.availableSeats)
+        assertEquals(listOf(ConcertSeat(now, 2L, 100L), ConcertSeat(now, 3L, 100L)), result.availableSeats)
         assertEquals(allSeats, result.allSeats)
     }
 
@@ -102,12 +102,12 @@ class ConcertFacadeTest {
         // given
         val now = Instant.now()
         val allSeats = listOf(
-            ConcertSeat(now, 1L),
-            ConcertSeat(now.plusSeconds(86400), 1L)
+            ConcertSeat(now, 1L, 100L),
+            ConcertSeat(now.plusSeconds(86400), 1L, 100L)
         )
         val reservedSeats = listOf(
-            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, now, now, now.plusSeconds(300)),
-            Reservation(UUID.randomUUID().toString(), null, "token2", now.plusSeconds(86400), 1L, now, now, now.plusSeconds(300))
+            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, 100L, now, now, now.plusSeconds(300)),
+            Reservation(UUID.randomUUID().toString(), null, "token2", now.plusSeconds(86400), 1L, 100L, now, now, now.plusSeconds(300))
         )
 
         `when`(mockReservationRepository.findAll()).thenReturn(reservedSeats)
@@ -127,12 +127,12 @@ class ConcertFacadeTest {
         // given
         val now = Instant.now()
         val allSeats = listOf(
-            ConcertSeat(now, 1L),
-            ConcertSeat(now.plusSeconds(86400), 2L),
-            ConcertSeat(now.plusSeconds(172800), 3L)
+            ConcertSeat(now, 1L, 100L),
+            ConcertSeat(now.plusSeconds(86400), 2L, 100L),
+            ConcertSeat(now.plusSeconds(172800), 3L, 100L)
         )
         val reservedSeats = listOf(
-            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, now, now, now.plusSeconds(300))
+            Reservation(UUID.randomUUID().toString(), null, "token1", now, 1L, 100L, now, now, now.plusSeconds(300))
         )
 
         `when`(mockReservationRepository.findAll()).thenReturn(reservedSeats)

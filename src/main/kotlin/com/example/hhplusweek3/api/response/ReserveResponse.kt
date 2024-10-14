@@ -4,7 +4,7 @@ import com.example.hhplusweek3.domain.model.Reservation
 import java.time.Instant
 
 data class ReserveResponse(
-    val reservationId: String,
+    val paymentId: String,
     val orderNumber: String?,
     val reservedSeatNumber: Long,
     val reservedTimeUtc: Instant,
@@ -15,7 +15,7 @@ data class ReserveResponse(
 ) {
     constructor(reservation: Reservation) : this(
         reservation.reservationId,
-        reservation.orderNumber,
+        reservation.paymentId,
         reservation.reservedSeat,
         reservation.dateTimeUtc,
         reservation.queueToken,

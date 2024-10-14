@@ -6,8 +6,9 @@ import java.time.Instant
 
 interface ReservationJpaRepository : JpaRepository<ReservationEntity, Long> {
     fun findByReservedDateUtcAndReservedSeatNumber(dateUtc: Instant, seatNumber: Long): ReservationEntity?
-    fun findAllByOrderNumberIsNullAndExpirationTimeUtcIsBefore(dateUtc: Instant): List<ReservationEntity>
+    fun findAllByReservationIdIsNullAndExpirationTimeUtcIsBefore(dateUtc: Instant): List<ReservationEntity>
     fun deleteAllByReservationIdIn(reservationIds: List<String>)
     fun findByQueueToken(queueToken: String): ReservationEntity?
     fun findAllByReservedDateUtc(dateUtc: Instant): List<ReservationEntity>
+    fun findByReservationIdAndQueueToken(reservationId: String, queueToken: String): ReservationEntity?
 }
