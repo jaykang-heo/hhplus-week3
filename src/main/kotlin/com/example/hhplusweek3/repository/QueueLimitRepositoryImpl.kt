@@ -3,6 +3,7 @@ package com.example.hhplusweek3.repository
 import com.example.hhplusweek3.domain.model.QueueLimit
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.port.QueueLimitRepository
+import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository

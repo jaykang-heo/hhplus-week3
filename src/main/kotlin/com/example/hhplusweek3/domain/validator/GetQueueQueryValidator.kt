@@ -1,4 +1,4 @@
-package com.example.hhplusweek3.domain
+package com.example.hhplusweek3.domain.validator
 
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.query.GetQueueQuery

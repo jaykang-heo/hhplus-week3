@@ -3,6 +3,8 @@ package com.example.hhplusweek3.repository
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.port.QueueRepository
+import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
+import com.example.hhplusweek3.repository.model.QueueEntity
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Repository
 import java.time.Instant
@@ -39,5 +41,19 @@ class QueueRepositoryImpl(
 
     override fun findByToken(token: String): Queue? {
         return queueEntityJpaRepository.findByToken(token)?.toModel()
+    }
+
+    override fun findAllPending(): List<Queue> {
+        return queueEntityJpaRepository.findAllByStatus(QueueStatus.PENDING).map { it.toModel() }
+    }
+
+    override fun findAllActive(): List<Queue> {
+        return queueEntityJpaRepository.findAllByStatus(QueueStatus.ACTIVE).map { it.toModel() }
+    }
+
+    override fun changeStatusToActive(token: String) {
+        val dataModel = queueEntityJpaRepository.findByToken(token)!!
+        dataModel.status = QueueStatus.ACTIVE
+        queueEntityJpaRepository.save(dataModel)
     }
 }

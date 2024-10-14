@@ -1,4 +1,4 @@
-package com.example.hhplusweek3.repository
+package com.example.hhplusweek3.repository.model
 
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus

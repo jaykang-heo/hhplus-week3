@@ -9,4 +9,7 @@ interface QueueRepository {
     fun changeStatusToExpire(tokens: List<String>)
     fun getByToken(token: String): Queue
     fun findByToken(token: String): Queue?
+    fun findAllPending(): List<Queue>
+    fun findAllActive(): List<Queue>
+    fun changeStatusToActive(token: String)
 }

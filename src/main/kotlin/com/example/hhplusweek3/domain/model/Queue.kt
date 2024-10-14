@@ -7,9 +7,9 @@ import java.util.UUID
 data class Queue(
     val token: String,
     val status: QueueStatus,
-    val expirationTimeUtc: Instant,
+    var expirationTimeUtc: Instant,
     val createdTimeUtc: Instant,
-    val updatedTimeUtc: Instant
+    var updatedTimeUtc: Instant
 ) {
     constructor(command: IssueQueueTokenCommand) : this(
         generateQueueToken(),
@@ -18,6 +18,14 @@ data class Queue(
         Instant.now(),
         Instant.now()
     )
+
+    fun extendExpirationTime(time: Instant) {
+        expirationTimeUtc = time.plusSeconds(EXPIRATION_INTERVAL_SECONDS)
+    }
+
+    fun updateUpdatedTime(time: Instant) {
+        updatedTimeUtc = time
+    }
 
     companion object {
         fun generateQueueToken(): String {

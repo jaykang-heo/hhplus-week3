@@ -1,7 +1,6 @@
-package com.example.hhplusweek3.api
+package com.example.hhplusweek3.api.contract
 
 import com.example.hhplusweek3.api.request.ReserveRequest
-import com.example.hhplusweek3.api.response.AvailableSeatByDateResponse
 import com.example.hhplusweek3.api.response.FindAvailableDatesResponse
 import com.example.hhplusweek3.api.response.FindAvailableSeatsResponse
 import com.example.hhplusweek3.api.response.ReserveResponse
@@ -15,17 +14,11 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
-import java.util.UUID
-import kotlin.random.Random
 
-@RestController
-@RequestMapping("/api/v1/reservations")
-class ReservationController {
+interface ReservationController {
 
     @Operation(summary = "사용 가능한 좌석 찾기", description = "주어진 날짜에 대해 사용 가능한 좌석을 검색합니다")
     @ApiResponses(
@@ -42,17 +35,7 @@ class ReservationController {
     @GetMapping("/seats")
     fun getAvailableSeats(
         @RequestParam("dateUtc") dateUtc: Instant
-    ): FindAvailableSeatsResponse {
-        return FindAvailableSeatsResponse(
-            (1..5).map {
-                AvailableSeatByDateResponse(
-                    Instant.now(),
-                    (1..5).map { it },
-                    (1..50).map { it }
-                )
-            }
-        )
-    }
+    ): FindAvailableSeatsResponse
 
     @Operation(summary = "사용 가능한 날짜 찾기", description = "예약 가능한 날짜를 검색합니다")
     @ApiResponses(
@@ -66,12 +49,7 @@ class ReservationController {
         ]
     )
     @GetMapping("/dates")
-    fun getAvailableDates(): FindAvailableDatesResponse {
-        return FindAvailableDatesResponse(
-            (1..5).map { Instant.now() },
-            (1..10).map { Instant.now() }
-        )
-    }
+    fun getAvailableDates(): FindAvailableDatesResponse
 
     @Operation(summary = "좌석 예약", description = "주어진 날짜와 시간에 대해 좌석을 예약합니다")
     @ApiResponses(
@@ -91,14 +69,5 @@ class ReservationController {
     fun reserve(
         @RequestBody request: ReserveRequest,
         @RequestHeader("Authorization") authorization: String
-    ): ReserveResponse {
-        return ReserveResponse(
-            Random.nextLong(1, Long.MAX_VALUE),
-            UUID.randomUUID().toString(),
-            "PENDING",
-            Random.nextInt(1, Int.MAX_VALUE),
-            Instant.now(),
-            Instant.now()
-        )
-    }
+    ): ReserveResponse
 }
