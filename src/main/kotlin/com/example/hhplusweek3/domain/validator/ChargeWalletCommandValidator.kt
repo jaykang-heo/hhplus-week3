@@ -13,8 +13,8 @@ class ChargeWalletCommandValidator(
     fun validate(command: ChargeWalletCommand) {
         command.validate()
 
-        val queue = queueRepository.findByToken(command.token)
-            ?: throw RuntimeException("queue not found by ${command.token}")
+        val queue = queueRepository.findByToken(command.queueToken)
+            ?: throw RuntimeException("queue not found by ${command.queueToken}")
 
         if (queue.status != QueueStatus.ACTIVE) {
             throw RuntimeException("queue is not active. queue status is ${queue.status}")

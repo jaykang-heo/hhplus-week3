@@ -6,6 +6,7 @@ import com.example.hhplusweek3.api.response.ChargeWalletBalanceResponse
 import com.example.hhplusweek3.api.response.GetWalletBalanceResponse
 import com.example.hhplusweek3.application.WalletFacade
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
+import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -25,6 +26,8 @@ class WalletControllerImpl(
     }
 
     override fun getWalletBalance(authHeader: String): GetWalletBalanceResponse {
-        TODO("Not yet implemented")
+        val query = GetWalletBalanceQuery(authHeader)
+        val wallet = walletFacade.get(query)
+        return GetWalletBalanceResponse(wallet.balance)
     }
 }

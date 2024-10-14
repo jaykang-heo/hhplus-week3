@@ -17,4 +17,12 @@ class WalletRepositoryImpl(
         dataModel.balance += amount
         return walletEntityJpaRepository.save(dataModel).toModel()
     }
+
+    override fun getByQueueToken(queueToken: String): Wallet {
+        return walletEntityJpaRepository.findByQueueToken(queueToken)!!.toModel()
+    }
+
+    override fun findByQueueToken(queueToken: String): Wallet? {
+        return walletEntityJpaRepository.findByQueueToken(queueToken)?.toModel()
+    }
 }
