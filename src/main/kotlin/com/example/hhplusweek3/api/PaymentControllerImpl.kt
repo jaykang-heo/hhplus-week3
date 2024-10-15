@@ -1,7 +1,7 @@
 package com.example.hhplusweek3.api
 
-import CreatePaymentRequest
 import com.example.hhplusweek3.api.contract.PaymentController
+import com.example.hhplusweek3.api.request.CreatePaymentRequest
 import com.example.hhplusweek3.api.response.CreatePaymentResponse
 import com.example.hhplusweek3.application.PaymentFacade
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
