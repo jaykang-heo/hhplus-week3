@@ -24,6 +24,6 @@ class ConcertControllerImpl(
 
     override fun findAvailableDates(): FindAvailableDatesResponse {
         val concert = concertFacade.findAvailableDates()
-        return FindAvailableDatesResponse(concert.availableDates, concert.allDates)
+        return FindAvailableDatesResponse(concert)
     }
 }

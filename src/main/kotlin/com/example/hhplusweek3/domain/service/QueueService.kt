@@ -5,6 +5,7 @@ import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.port.QueueRepository
 import org.springframework.stereotype.Component
 import java.time.Instant
+import kotlin.math.abs
 
 @Component
 class QueueService(
@@ -15,10 +16,12 @@ class QueueService(
         return Queue(command)
     }
 
-    fun preRun(queueToken: String) {
-        extendExpirationTime(queueToken)
-        expireBeforeTime(Instant.now())
-        activatePendingQueues()
+    fun extendExpirationTime(queueToken: String) {
+        val queue = queueRepository.findByToken(queueToken) ?: return
+        val now = Instant.now()
+        queue.extendExpirationTime(now)
+        queue.updateUpdatedTime(now)
+        queueRepository.update(queue)
     }
 
     fun expireBeforeTime(time: Instant) {
@@ -27,19 +30,11 @@ class QueueService(
         queueRepository.changeStatusToExpire(tokens)
     }
 
-    fun extendExpirationTime(queueToken: String) {
-        val queue = queueRepository.findByToken(queueToken) ?: return
-        val now = Instant.now()
-        queue.extendExpirationTime(now)
-        queue.updateUpdatedTime(now)
-        queueRepository.save(queue)
-    }
-
     fun activatePendingQueues() {
         val pendingQueues = queueRepository.findAllPending()
             .sortedBy { it.createdTimeUtc }
         val activeQueueCount = queueRepository.findAllActive().size
-        val availableSlots = ACTIVE_LIMIT - activeQueueCount
+        val availableSlots = abs(ACTIVE_LIMIT - activeQueueCount)
 
         pendingQueues.take(availableSlots)
             .forEach { queue ->
@@ -48,6 +43,6 @@ class QueueService(
     }
 
     companion object {
-        private const val ACTIVE_LIMIT = 100
+        const val ACTIVE_LIMIT = 100
     }
 }

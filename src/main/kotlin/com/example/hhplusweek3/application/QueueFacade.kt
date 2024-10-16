@@ -8,7 +8,6 @@ import com.example.hhplusweek3.domain.service.QueueService
 import com.example.hhplusweek3.domain.validator.GetQueueQueryValidator
 import com.example.hhplusweek3.domain.validator.IssueQueueTokenCommandValidator
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 @Service
 class QueueFacade(
@@ -20,15 +19,13 @@ class QueueFacade(
 
     fun issue(command: IssueQueueTokenCommand): Queue {
         val queue = queueService.generateQueue(command)
-        queueService.expireBeforeTime(queue.createdTimeUtc)
         issueQueueTokenCommandValidator.validate(command)
-        return queueRepository.save(queue)
+        queueRepository.save(queue)
+        queueService.activatePendingQueues()
+        return queueRepository.getByToken(queue.token)
     }
 
     fun get(query: GetQueueQuery): Queue {
-        val now = Instant.now()
-        query.validate()
-        queueService.expireBeforeTime(now)
         getQueueQueryValidator.validate(query)
         return queueRepository.getByToken(query.token)
     }

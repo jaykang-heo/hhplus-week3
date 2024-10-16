@@ -40,7 +40,7 @@ class ReservationEntity(
 
     constructor(reservation: Reservation) : this(
         0,
-        reservation.reservationId,
+        reservation.id,
         reservation.paymentId,
         reservation.queueToken,
         reservation.reservedSeat,

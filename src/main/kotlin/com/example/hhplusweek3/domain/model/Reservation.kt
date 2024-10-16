@@ -5,7 +5,7 @@ import java.time.Instant
 import java.util.UUID
 
 data class Reservation(
-    val reservationId: String,
+    val id: String,
     val paymentId: String?,
     val queueToken: String,
     val dateTimeUtc: Instant,

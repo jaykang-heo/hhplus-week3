@@ -11,10 +11,8 @@ class WalletRepositoryImpl(
     private val walletEntityJpaRepository: WalletEntityJpaRepository
 ) : WalletRepository {
 
-    override fun charge(amount: Long, queueToken: String): Wallet {
-        val dataModel = walletEntityJpaRepository.findByQueueToken(queueToken)
-            ?: WalletEntity(amount, queueToken)
-        dataModel.balance += amount
+    override fun save(wallet: Wallet): Wallet {
+        val dataModel = WalletEntity(wallet)
         return walletEntityJpaRepository.save(dataModel).toModel()
     }
 

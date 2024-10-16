@@ -24,7 +24,7 @@ class PaymentFacadeTest {
     private val mockPaymentRepository = mock(PaymentRepository::class.java)
     private val mockReservationRepository = mock(ReservationRepository::class.java)
     private val mockCreatePaymentCommandValidator = mock(CreatePaymentCommandValidator::class.java)
-    private val sut = PaymentFacade(mockPaymentRepository, mockReservationRepository, mockCreatePaymentCommandValidator)
+    private val sut = PaymentFacade(mockCreatePaymentCommandValidator, mockPaymentRepository, mockReservationRepository)
 
     @Test
     @DisplayName("결제 생성 명령 검증이 실패하면, 에러를 반환한다")

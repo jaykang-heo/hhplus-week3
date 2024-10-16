@@ -15,7 +15,7 @@ class ReservationControllerImpl(
 ) : ReservationController {
 
     override fun reserve(request: ReserveRequest, authorization: String): ReserveResponse {
-        val command = CreateReservationCommand(authorization, request.seatNumber, request.dateUct)
+        val command = CreateReservationCommand(authorization, request.seatNumber, request.dateUtc)
         val reservation = reservationFacade.reserve(command)
         return ReserveResponse(reservation)
     }

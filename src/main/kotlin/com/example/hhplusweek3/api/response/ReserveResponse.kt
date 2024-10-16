@@ -57,7 +57,7 @@ data class ReserveResponse(
 ) {
     constructor(reservation: Reservation) : this(
         paymentId = reservation.paymentId,
-        reservationId = reservation.reservationId,
+        reservationId = reservation.id,
         reservedSeatNumber = reservation.reservedSeat,
         reservedTimeUtc = reservation.dateTimeUtc,
         queueToken = reservation.queueToken,

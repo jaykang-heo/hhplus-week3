@@ -24,6 +24,12 @@ class QueueRepositoryImpl(
             .map { it.toModel() }
     }
 
+    override fun update(queue: Queue): Queue {
+        val entity = QueueEntity(queue)
+        entity.id = queueEntityJpaRepository.findByToken(entity.token)!!.id
+        return queueEntityJpaRepository.save(entity).toModel()
+    }
+
     @Transactional
     override fun changeStatusToExpire(tokens: List<String>) {
         val expiredQueues = queueEntityJpaRepository

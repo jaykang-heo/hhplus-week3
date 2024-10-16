@@ -9,15 +9,11 @@ class ReservationService(
     private val reservationRepository: ReservationRepository
 ) {
 
-    fun preRun() {
-        deleteExpiredReservations()
-    }
-
-    fun deleteExpiredReservations() {
+    fun deleteIfExpired(date: Instant, seatNumber: Long) {
         val now = Instant.now()
-        val expiredReservations = reservationRepository.findAllByOrderNumberIsNullAndBeforeDate(now)
-        val reservationIds = expiredReservations.map { it.reservationId }
-        if (reservationIds.isEmpty()) return
-        reservationRepository.deleteAllByReservationIds(reservationIds)
+        val reservation = reservationRepository.findBySeatNumberAndDate(seatNumber, date) ?: return
+        if (reservation.expirationTimeUtc < now && reservation.paymentId == null) {
+            reservationRepository.deleteByReservationId(reservation.id)
+        }
     }
 }

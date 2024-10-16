@@ -5,6 +5,7 @@ import java.time.Instant
 
 interface QueueRepository {
     fun save(queue: Queue): Queue
+    fun update(queue: Queue): Queue
     fun findAllByActiveAndBeforeTime(time: Instant): List<Queue>
     fun changeStatusToExpire(tokens: List<String>)
     fun getByToken(token: String): Queue

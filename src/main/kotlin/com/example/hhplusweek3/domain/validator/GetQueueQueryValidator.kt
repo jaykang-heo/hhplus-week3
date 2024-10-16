@@ -10,6 +10,7 @@ class GetQueueQueryValidator(
 ) {
 
     fun validate(query: GetQueueQuery) {
+        query.validate()
         queueRepository.findByToken(query.token)
             ?: throw RuntimeException("queue not found by ${query.token}")
     }

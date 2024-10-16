@@ -14,7 +14,7 @@ import java.time.Instant
 class QueueEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    var id: Long,
     val token: String,
     var status: QueueStatus,
     val expirationTimeUtc: Instant,

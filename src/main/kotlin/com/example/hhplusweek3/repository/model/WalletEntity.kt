@@ -21,14 +21,15 @@ data class WalletEntity(
 ) {
     fun toModel(): Wallet {
         return Wallet(
-            balance
+            balance,
+            queueToken
         )
     }
 
-    constructor(amount: Long, queueToken: String) : this(
+    constructor(wallet: Wallet) : this(
         0,
-        queueToken,
-        amount,
+        wallet.queueToken,
+        wallet.balance,
         Instant.now(),
         Instant.now()
     )

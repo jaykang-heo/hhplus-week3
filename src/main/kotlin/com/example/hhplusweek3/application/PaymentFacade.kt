@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class PaymentFacade(
+
+    private val createPaymentCommandValidator: CreatePaymentCommandValidator,
     private val paymentRepository: PaymentRepository,
-    private val reservationRepository: ReservationRepository,
-    private val createPaymentCommandValidator: CreatePaymentCommandValidator
+    private val reservationRepository: ReservationRepository
 ) {
 
     fun createPayment(command: CreatePaymentCommand): Payment {

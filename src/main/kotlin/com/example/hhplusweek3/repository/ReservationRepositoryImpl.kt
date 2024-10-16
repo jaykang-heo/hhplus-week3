@@ -2,50 +2,58 @@ package com.example.hhplusweek3.repository
 
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.ReservationRepository
-import com.example.hhplusweek3.repository.jpa.ReservationJpaRepository
+import com.example.hhplusweek3.repository.jpa.ReservationEntityJpaRepository
 import com.example.hhplusweek3.repository.model.ReservationEntity
 import org.springframework.stereotype.Repository
 import java.time.Instant
 
 @Repository
 class ReservationRepositoryImpl(
-    private val reservationJpaRepository: ReservationJpaRepository
+    private val reservationEntityJpaRepository: ReservationEntityJpaRepository
 ) : ReservationRepository {
 
     override fun save(reservation: Reservation): Reservation {
         val dataModel = ReservationEntity(reservation)
-        return reservationJpaRepository.save(dataModel).toModel()
+        return reservationEntityJpaRepository.save(dataModel).toModel()
     }
 
     override fun findReservationBySeatNumberAndDate(dateUtc: Instant, seatNumber: Long): Reservation? {
-        return reservationJpaRepository.findByReservedDateUtcAndReservedSeatNumber(dateUtc, seatNumber)?.toModel()
+        return reservationEntityJpaRepository.findByReservedDateUtcAndReservedSeatNumber(dateUtc, seatNumber)?.toModel()
     }
 
     override fun findAllByOrderNumberIsNullAndBeforeDate(dateUtc: Instant): List<Reservation> {
-        return reservationJpaRepository.findAllByReservationIdIsNullAndExpirationTimeUtcIsBefore(dateUtc).map { it.toModel() }
+        return reservationEntityJpaRepository.findAllByReservationIdIsNullAndExpirationTimeUtcIsBefore(dateUtc).map { it.toModel() }
     }
 
     override fun deleteAllByReservationIds(reservationIds: List<String>) {
-        reservationJpaRepository.deleteAllByReservationIdIn(reservationIds)
+        reservationEntityJpaRepository.deleteAllByReservationIdIn(reservationIds)
+    }
+
+    override fun deleteByReservationId(reservationId: String) {
+        reservationEntityJpaRepository.deleteByReservationId(reservationId)
     }
 
     override fun findByToken(token: String): Reservation? {
-        return reservationJpaRepository.findByQueueToken(token)?.toModel()
+        return reservationEntityJpaRepository.findByQueueToken(token)?.toModel()
     }
 
     override fun findAllByDate(dateUtc: Instant): List<Reservation> {
-        return reservationJpaRepository.findAllByReservedDateUtc(dateUtc).map { it.toModel() }
+        return reservationEntityJpaRepository.findAllByReservedDateUtc(dateUtc).map { it.toModel() }
     }
 
     override fun findAll(): List<Reservation> {
-        return reservationJpaRepository.findAll().map { it.toModel() }
+        return reservationEntityJpaRepository.findAll().map { it.toModel() }
     }
 
     override fun findByTokenAndReservationId(token: String, reservationId: String): Reservation? {
-        return reservationJpaRepository.findByReservationIdAndQueueToken(reservationId, token)?.toModel()
+        return reservationEntityJpaRepository.findByReservationIdAndQueueToken(reservationId, token)?.toModel()
     }
 
     override fun getByTokenAndReservationId(token: String, reservationId: String): Reservation {
-        return reservationJpaRepository.findByReservationIdAndQueueToken(reservationId, token)!!.toModel()
+        return reservationEntityJpaRepository.findByReservationIdAndQueueToken(reservationId, token)!!.toModel()
+    }
+
+    override fun findBySeatNumberAndDate(seatNumber: Long, dateUtc: Instant): Reservation? {
+        return reservationEntityJpaRepository.findByReservedDateUtcAndReservedSeatNumber(dateUtc, seatNumber)?.toModel()
     }
 }

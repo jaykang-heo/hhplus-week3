@@ -1,11 +1,11 @@
-package com.example.hhplusweek3.application
+package com.example.hhplusweek3.application.unittest
 
+import com.example.hhplusweek3.application.ReservationFacade
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.ConcertSeat
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
-import com.example.hhplusweek3.domain.service.QueueService
 import com.example.hhplusweek3.domain.service.ReservationService
 import com.example.hhplusweek3.domain.validator.CreateReservationCommandValidator
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,55 +23,11 @@ import java.util.UUID
 import kotlin.random.Random
 
 class ReservationFacadeTest {
-
     private val mockReservationRepository = mock(ReservationRepository::class.java)
-    private val mockQueueService = mock(QueueService::class.java)
     private val mockReservationService = mock(ReservationService::class.java)
     private val mockCreateReservationCommandValidator = mock(CreateReservationCommandValidator::class.java)
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
-    private val sut = ReservationFacade(mockReservationRepository, mockConcertSeatRepository, mockQueueService, mockReservationService, mockCreateReservationCommandValidator)
-
-    @Test
-    @DisplayName("예약 생성 작업 중 대기열 선행 작업이 실패했을때, 실행을 멈춘다")
-    fun `when queue pre run fails, then stop`() {
-        // given
-        val token = UUID.randomUUID().toString()
-        val seatNumber = Random.nextLong()
-        val dateUtc = Instant.now().plusSeconds(10)
-        val command = CreateReservationCommand(token, seatNumber, dateUtc)
-        doThrow(RuntimeException("Queue pre-run failed")).`when`(mockQueueService).preRun(any())
-
-        // when & then
-        assertThrows(RuntimeException::class.java) {
-            sut.reserve(command)
-        }
-
-        verify(mockQueueService).preRun(any())
-        verify(mockReservationService, never()).preRun()
-        verify(mockCreateReservationCommandValidator, never()).validate(any())
-        verify(mockReservationRepository, never()).save(any())
-    }
-
-    @Test
-    @DisplayName("예약 생성 작업 중 예약 선행 작업이 실패했을때, 실행을 멈춘다")
-    fun `when reservation pre run fails, then stop`() {
-        // given
-        val token = UUID.randomUUID().toString()
-        val seatNumber = Random.nextLong()
-        val dateUtc = Instant.now().plusSeconds(10)
-        val command = CreateReservationCommand(token, seatNumber, dateUtc)
-        doThrow(RuntimeException("Reservation pre-run failed")).`when`(mockReservationService).preRun()
-
-        // when & then
-        assertThrows(RuntimeException::class.java) {
-            sut.reserve(command)
-        }
-
-        verify(mockQueueService).preRun(any())
-        verify(mockReservationService).preRun()
-        verify(mockCreateReservationCommandValidator, never()).validate(any())
-        verify(mockReservationRepository, never()).save(any())
-    }
+    private val sut = ReservationFacade(mockReservationRepository, mockConcertSeatRepository, mockReservationService, mockCreateReservationCommandValidator)
 
     @Test
     @DisplayName("예약 생성 정책 검증이 실패하면, 실행을 멈춘다")
@@ -88,8 +44,6 @@ class ReservationFacadeTest {
             sut.reserve(command)
         }
 
-        verify(mockQueueService).preRun(any())
-        verify(mockReservationService).preRun()
         verify(mockCreateReservationCommandValidator).validate(any())
         verify(mockReservationRepository, never()).save(any())
     }
@@ -112,8 +66,6 @@ class ReservationFacadeTest {
 
         // then
         assertEquals(expectedReservation, result)
-        verify(mockQueueService).preRun(any())
-        verify(mockReservationService).preRun()
         verify(mockCreateReservationCommandValidator).validate(any())
         verify(mockReservationRepository).save(any())
     }
