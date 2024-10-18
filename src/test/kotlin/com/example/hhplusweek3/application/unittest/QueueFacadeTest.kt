@@ -38,7 +38,6 @@ class QueueFacadeTest {
         sut = QueueFacade(
             queueService = mockQueueService,
             queueRepository = mockQueueRepository,
-            issueQueueTokenCommandValidator = mockIssueQueueTokenCommandValidator,
             getQueueQueryValidator = mockGetQueueQueryValidator
         )
     }
@@ -47,23 +46,13 @@ class QueueFacadeTest {
     @DisplayName("대기열 토큰 발급 명령을 내리면, 대기열을 반환한다")
     fun `when issue queue token command, then return queue`() {
         // given
-        val command = IssueQueueTokenCommand(/* initialize with necessary parameters if any */)
+        val command = IssueQueueTokenCommand()
         val generatedQueue = Queue(command)
-        val savedQueue = generatedQueue.copy() // Simulate any changes during save if necessary
-
-        // Mock the generateQueue method to return the generatedQueue
+        val savedQueue = generatedQueue.copy()
         `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
-
-        // Mock the validate method to do nothing (i.e., pass validation)
         doNothing().`when`(mockIssueQueueTokenCommandValidator).validate(command)
-
-        // Mock the save method to return the savedQueue
         `when`(mockQueueRepository.save(generatedQueue)).thenReturn(generatedQueue)
-
-        // Mock the activatePendingQueues method to do nothing
         doNothing().`when`(mockQueueService).activatePendingQueues()
-
-        // Mock the getByToken method to return the savedQueue
         `when`(mockQueueRepository.getByToken(generatedQueue.token)).thenReturn(savedQueue)
 
         // when
@@ -71,66 +60,27 @@ class QueueFacadeTest {
 
         // then
         assertThat(actual).isEqualTo(savedQueue)
-
-        // Verify the interactions
         verify(mockQueueService).generateQueue(command)
-        verify(mockIssueQueueTokenCommandValidator).validate(command)
         verify(mockQueueRepository).save(generatedQueue)
         verify(mockQueueService).activatePendingQueues()
         verify(mockQueueRepository).getByToken(generatedQueue.token)
     }
 
     @Test
-    @DisplayName("대기열 검증 작업이 실패하면, 대기열을 반환하지 않는다")
-    fun `when validate queue fail, then do not return queue`() {
-        // given
-        val command = IssueQueueTokenCommand(/* initialize with necessary parameters if any */)
-        val generatedQueue = Queue(command)
-
-        // Mock the generateQueue method to return the generatedQueue
-        `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
-
-        // Mock the validate method to throw an exception
-        doThrow(IllegalArgumentException("Validation failed"))
-            .`when`(mockIssueQueueTokenCommandValidator).validate(command)
-
-        // when & then
-        assertThatThrownBy { sut.issue(command) }
-            .isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("Validation failed")
-
-        // Verify the interactions
-        verify(mockQueueService).generateQueue(command)
-        verify(mockIssueQueueTokenCommandValidator).validate(command)
-        verify(mockQueueRepository, never()).save(any())
-        verify(mockQueueService, never()).activatePendingQueues()
-        verify(mockQueueRepository, never()).getByToken(any())
-    }
-
-    @Test
     @DisplayName("대기열 저장 작업이 실패하면, 대기열을 반환하지 않는다")
     fun `when save queue fail, then do not return queue`() {
         // given
-        val command = IssueQueueTokenCommand(/* initialize with necessary parameters if any */)
+        val command = IssueQueueTokenCommand()
         val generatedQueue = Queue(command)
-
-        // Mock the generateQueue method to return the generatedQueue
         `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
-
-        // Mock the validate method to do nothing (i.e., pass validation)
         doNothing().`when`(mockIssueQueueTokenCommandValidator).validate(command)
-
-        // Mock the save method to throw an exception
         `when`(mockQueueRepository.save(generatedQueue)).thenThrow(RuntimeException("Save failed"))
 
         // when & then
         assertThatThrownBy { sut.issue(command) }
             .isInstanceOf(RuntimeException::class.java)
             .hasMessage("Save failed")
-
-        // Verify the interactions
         verify(mockQueueService).generateQueue(command)
-        verify(mockIssueQueueTokenCommandValidator).validate(command)
         verify(mockQueueRepository).save(generatedQueue)
         verify(mockQueueService, never()).activatePendingQueues()
         verify(mockQueueRepository, never()).getByToken(any())
@@ -141,8 +91,6 @@ class QueueFacadeTest {
     fun `when validate policy for get queue fail, then do not run other functions`() {
         // given
         val query = GetQueueQuery("token123")
-
-        // Mock the validate method to throw an exception
         doThrow(IllegalArgumentException("Policy validation failed"))
             .`when`(mockGetQueueQueryValidator).validate(query)
 
@@ -150,8 +98,6 @@ class QueueFacadeTest {
         assertThatThrownBy { sut.get(query) }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("Policy validation failed")
-
-        // Verify the interactions
         verify(mockGetQueueQueryValidator).validate(query)
         verify(mockQueueRepository, never()).getByToken(any())
     }
@@ -161,12 +107,8 @@ class QueueFacadeTest {
     fun `when get queue info succeed, then return queue`() {
         // given
         val query = GetQueueQuery("token123")
-        val queue = Queue(IssueQueueTokenCommand(/* initialize with necessary parameters if any */))
-
-        // Mock the validate method to do nothing (i.e., pass validation)
+        val queue = Queue(IssueQueueTokenCommand())
         doNothing().`when`(mockGetQueueQueryValidator).validate(query)
-
-        // Mock the getByToken method to return the queue
         `when`(mockQueueRepository.getByToken("token123")).thenReturn(queue)
 
         // when
@@ -174,8 +116,6 @@ class QueueFacadeTest {
 
         // then
         assertThat(result).isEqualTo(queue)
-
-        // Verify the interactions
         verify(mockGetQueueQueryValidator).validate(query)
         verify(mockQueueRepository).getByToken("token123")
     }

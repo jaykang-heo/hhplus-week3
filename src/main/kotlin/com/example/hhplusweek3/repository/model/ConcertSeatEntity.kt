@@ -14,7 +14,6 @@ class ConcertSeatEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
-    val name: String,
     val dateUtc: Instant,
     val seatNumber: Long,
     val amount: Long
