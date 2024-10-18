@@ -1,10 +1,12 @@
 package com.example.hhplusweek3.api.response
 
-import java.time.Instant
+import io.swagger.v3.oas.annotations.media.Schema
 
+@Schema(description = "대기열 정보 응답 객체")
 data class GetQueueInfoResponse(
-    val userId: String,
-    val currentCount: Long,
-    val totalCount: Long,
-    val createdAt: Instant
+    @Schema(
+        description = "대기열 정보",
+        implementation = QueueResponse::class
+    )
+    val queue: QueueResponse
 )
