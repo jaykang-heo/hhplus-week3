@@ -5,7 +5,7 @@ import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.query.GetQueueQuery
 import com.example.hhplusweek3.domain.service.QueueService
-import com.example.hhplusweek3.testservice.TestService
+import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.within
@@ -21,12 +21,11 @@ import java.time.temporal.ChronoUnit
 @Transactional
 class QueueFacadeIntegrationTest(
     @Autowired private val sut: QueueFacade,
-    @Autowired private val testService: TestService
+    @Autowired private val testUtils: TestUtils,
 ) {
-
     @BeforeEach
     fun setup() {
-        testService.resetQueues()
+        testUtils.resetQueues()
     }
 
     @Test
@@ -55,9 +54,9 @@ class QueueFacadeIntegrationTest(
         repeat(QueueService.ACTIVE_LIMIT) {
             val command = IssueQueueTokenCommand()
             val queue = sut.issue(command)
-            testService.activateQueue(queue.token)
+            testUtils.activateQueue(queue.token)
         }
-        val activeQueues = testService.getActiveQueues()
+        val activeQueues = testUtils.getActiveQueues()
         assertThat(activeQueues.size).isEqualTo(QueueService.ACTIVE_LIMIT)
 
         // when
@@ -76,7 +75,7 @@ class QueueFacadeIntegrationTest(
     @DisplayName("대기열 칸이 남아있다면 바로 활성화한다")
     fun `when queue is not full then create queue as active`() {
         // given
-        val currentActive = testService.getActiveQueues().size
+        val currentActive = testUtils.getActiveQueues().size
         QueueService.ACTIVE_LIMIT - currentActive
 
         // when

@@ -8,19 +8,17 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class WalletRepositoryImpl(
-    private val walletEntityJpaRepository: WalletEntityJpaRepository
+    private val walletEntityJpaRepository: WalletEntityJpaRepository,
 ) : WalletRepository {
-
     override fun save(wallet: Wallet): Wallet {
-        val dataModel = WalletEntity(wallet)
+        val dataModel =
+            walletEntityJpaRepository.findByQueueToken(wallet.queueToken)
+                ?: WalletEntity(wallet)
+        dataModel.balance = wallet.balance
         return walletEntityJpaRepository.save(dataModel).toModel()
     }
 
-    override fun getByQueueToken(queueToken: String): Wallet {
-        return walletEntityJpaRepository.findByQueueToken(queueToken)!!.toModel()
-    }
+    override fun getByQueueToken(queueToken: String): Wallet = walletEntityJpaRepository.findByQueueToken(queueToken)!!.toModel()
 
-    override fun findByQueueToken(queueToken: String): Wallet? {
-        return walletEntityJpaRepository.findByQueueToken(queueToken)?.toModel()
-    }
+    override fun findByQueueToken(queueToken: String): Wallet? = walletEntityJpaRepository.findByQueueToken(queueToken)?.toModel()
 }

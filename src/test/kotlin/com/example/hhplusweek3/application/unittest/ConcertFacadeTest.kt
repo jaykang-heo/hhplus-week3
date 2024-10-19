@@ -2,7 +2,6 @@ package com.example.hhplusweek3.application.unittest
 
 import com.example.hhplusweek3.application.ConcertFacade
 import com.example.hhplusweek3.domain.model.Concert.Schedule
-import com.example.hhplusweek3.domain.model.Concert.Seat
 import com.example.hhplusweek3.domain.query.FindAvailableConcertSeatsQuery
 import com.example.hhplusweek3.domain.service.ConcertService
 import com.example.hhplusweek3.domain.validator.GetAvailableConcertSeatsQueryValidator
@@ -21,21 +20,23 @@ import org.mockito.kotlin.verifyNoInteractions
 import java.time.Instant
 
 class ConcertFacadeTest {
-
     private val mockConcertService = mock(ConcertService::class.java)
     private val mockGetAvailableConcertSeatsQueryValidator = mock(GetAvailableConcertSeatsQueryValidator::class.java)
-    private val sut = ConcertFacade(
-        concertService = mockConcertService,
-        getAvailableConcertSeatsQueryValidator = mockGetAvailableConcertSeatsQueryValidator
-    )
+    private val sut =
+        ConcertFacade(
+            concertService = mockConcertService,
+            getAvailableConcertSeatsQueryValidator = mockGetAvailableConcertSeatsQueryValidator,
+        )
 
     @Test
     @DisplayName("예약 가능한 좌석을 찾을 때 검증기가 에러를 반환하면, 실행을 중단한다")
     fun `when query validator fails, then stop`() {
         // given
         val query = FindAvailableConcertSeatsQuery(Instant.now())
-        Mockito.doThrow(RuntimeException("Validation failed"))
-            .`when`(mockGetAvailableConcertSeatsQueryValidator).validate(query)
+        Mockito
+            .doThrow(RuntimeException("Validation failed"))
+            .`when`(mockGetAvailableConcertSeatsQueryValidator)
+            .validate(query)
 
         // when & then
         assertThrows(RuntimeException::class.java) {
@@ -52,12 +53,13 @@ class ConcertFacadeTest {
         // given
         val now = Instant.now()
         val query = FindAvailableConcertSeatsQuery(now)
-        val allSeats = listOf(
-            Seat(number = 1L),
-            Seat(number = 2L),
-            Seat(number = 3L)
-        )
-        val availableSeats = emptyList<Seat>()
+        val allSeats =
+            listOf(
+                Schedule.Seat(number = 1L),
+                Schedule.Seat(number = 2L),
+                Schedule.Seat(number = 3L),
+            )
+        val availableSeats = emptyList<Schedule.Seat>()
 
         `when`(mockConcertService.getAvailableSeatsByDate(query.dateUtc)).thenReturn(availableSeats)
         `when`(mockConcertService.getAllSeatsByDate(query.dateUtc)).thenReturn(allSeats)
@@ -66,7 +68,12 @@ class ConcertFacadeTest {
         val result = sut.findAvailableSeats(query)
 
         // then
-        Assertions.assertTrue(result.availableSchedules.first().seats.isEmpty())
+        Assertions.assertTrue(
+            result.availableSchedules
+                .first()
+                .seats
+                .isEmpty(),
+        )
         assertEquals(allSeats, result.allSchedules.first().seats)
         Mockito.verify(mockGetAvailableConcertSeatsQueryValidator).validate(query)
         Mockito.verify(mockConcertService).getAvailableSeatsByDate(query.dateUtc)
@@ -79,15 +86,17 @@ class ConcertFacadeTest {
         // given
         val now = Instant.now()
         val query = FindAvailableConcertSeatsQuery(now)
-        val allSeats = listOf(
-            Seat(number = 1L),
-            Seat(number = 2L),
-            Seat(number = 3L)
-        )
-        val availableSeats = listOf(
-            Seat(number = 2L),
-            Seat(number = 3L)
-        )
+        val allSeats =
+            listOf(
+                Schedule.Seat(number = 1L),
+                Schedule.Seat(number = 2L),
+                Schedule.Seat(number = 3L),
+            )
+        val availableSeats =
+            listOf(
+                Schedule.Seat(number = 2L),
+                Schedule.Seat(number = 3L),
+            )
 
         `when`(mockConcertService.getAvailableSeatsByDate(query.dateUtc)).thenReturn(availableSeats)
         `when`(mockConcertService.getAllSeatsByDate(query.dateUtc)).thenReturn(allSeats)
@@ -108,10 +117,11 @@ class ConcertFacadeTest {
     fun `when all dates are reserved, then available schedules list is empty`() {
         // given
         val now = Instant.now()
-        val allSchedules = listOf(
-            Schedule(date = now, seats = listOf()),
-            Schedule(date = now.plusSeconds(86400), seats = listOf())
-        )
+        val allSchedules =
+            listOf(
+                Schedule(date = now, seats = listOf()),
+                Schedule(date = now.plusSeconds(86400), seats = listOf()),
+            )
         val availableSchedules = emptyList<Schedule>()
 
         `when`(mockConcertService.getAvailableSchedules()).thenReturn(availableSchedules)
@@ -132,15 +142,17 @@ class ConcertFacadeTest {
     fun `when there are available dates, then return available schedules list`() {
         // given
         val now = Instant.now()
-        val availableSchedules = listOf(
-            Schedule(date = now.plusSeconds(86400), seats = listOf()),
-            Schedule(date = now.plusSeconds(172800), seats = listOf())
-        )
-        val allSchedules = listOf(
-            Schedule(date = now, seats = listOf()),
-            Schedule(date = now.plusSeconds(86400), seats = listOf()),
-            Schedule(date = now.plusSeconds(172800), seats = listOf())
-        )
+        val availableSchedules =
+            listOf(
+                Schedule(date = now.plusSeconds(86400), seats = listOf()),
+                Schedule(date = now.plusSeconds(172800), seats = listOf()),
+            )
+        val allSchedules =
+            listOf(
+                Schedule(date = now, seats = listOf()),
+                Schedule(date = now.plusSeconds(86400), seats = listOf()),
+                Schedule(date = now.plusSeconds(172800), seats = listOf()),
+            )
 
         `when`(mockConcertService.getAvailableSchedules()).thenReturn(availableSchedules)
         `when`(mockConcertService.getAllSchedules()).thenReturn(allSchedules)

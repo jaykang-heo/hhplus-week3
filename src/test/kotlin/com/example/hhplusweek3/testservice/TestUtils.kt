@@ -19,58 +19,81 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 
 @Service
-class TestService(
+class TestUtils(
     private val concertSeatEntityJpaRepository: ConcertSeatEntityJpaRepository,
     private val reservationFacade: ReservationFacade,
     private val queueFacade: QueueFacade,
     private val queueEntityJpaRepository: QueueEntityJpaRepository,
     private val reservationEntityJpaRepository: ReservationEntityJpaRepository,
     private val queueRepository: QueueRepository,
-    private val walletEntityJpaRepository: WalletEntityJpaRepository
+    private val walletEntityJpaRepository: WalletEntityJpaRepository,
 ) {
     fun resetDatabase() {
         queueEntityJpaRepository.deleteAll()
         reservationEntityJpaRepository.deleteAll()
     }
 
-    fun issueQueue(): String {
-        return queueFacade.issue(IssueQueueTokenCommand()).token
+    fun issueQueue(): String = queueFacade.issue(IssueQueueTokenCommand()).token
+
+    fun setQueueToPendingStatus(queueToken: String): Queue {
+        val queue = queueEntityJpaRepository.findByToken(queueToken)!!
+        queue.status = QueueStatus.PENDING
+        val savedQueue = queueEntityJpaRepository.save(queue)
+        return savedQueue.toModel()
     }
 
-    fun issue(): Queue {
-        return queueFacade.issue(IssueQueueTokenCommand())
-    }
+    fun issue(): Queue = queueFacade.issue(IssueQueueTokenCommand())
 
     fun createReservation(): Reservation {
         resetDatabase()
         resetConcertSeats()
         val token = queueFacade.issue(IssueQueueTokenCommand()).token
-        val date = LocalDate.now().plusDays(2).atStartOfDay().toInstant(ZoneOffset.UTC)
+        val date =
+            LocalDate
+                .now()
+                .plusDays(2)
+                .atStartOfDay()
+                .toInstant(ZoneOffset.UTC)
         val command = CreateReservationCommand(token, 1L, date)
         return reservationFacade.reserve(command)
     }
 
-    fun resetConcertSeats(fromPlusDay: Long = 1, toPlusDay: Long = 10) {
+    fun resetConcertSeats(
+        fromPlusDay: Long = 1,
+        toPlusDay: Long = 10,
+    ) {
         concertSeatEntityJpaRepository.deleteAll()
         (fromPlusDay..toPlusDay).map { plusDay ->
-            val concertSeats = (1..50).map {
-                ConcertSeatEntity(
-                    0,
-                    LocalDate.now().plusDays(plusDay).atStartOfDay().toInstant(ZoneOffset.UTC),
-                    it.toLong(),
-                    1000L
-                )
-            }
+            val concertSeats =
+                (1..50).map {
+                    ConcertSeatEntity(
+                        0,
+                        LocalDate
+                            .now()
+                            .plusDays(plusDay)
+                            .atStartOfDay()
+                            .toInstant(ZoneOffset.UTC),
+                        it.toLong(),
+                        1000L,
+                    )
+                }
             concertSeatEntityJpaRepository.saveAll(concertSeats)
         }
     }
 
-    fun createConcertSeat(dateUtc: Instant, seatNumber: Long, amount: Int = 1) {
+    fun createConcertSeat(
+        dateUtc: Instant,
+        seatNumber: Long,
+        amount: Int = 1,
+    ) {
         val concertSeat = ConcertSeatEntity(0, dateUtc = dateUtc, seatNumber = seatNumber, amount = amount.toLong())
         concertSeatEntityJpaRepository.save(concertSeat)
     }
 
-    fun createConcertSeats(dateUtc: Instant, totalSeats: Int) {
+    fun createConcertSeats(
+        dateUtc: Instant,
+        totalSeats: Int,
+    ) {
         for (seatNumber in 1..totalSeats) {
             createConcertSeat(dateUtc, seatNumber.toLong())
         }
@@ -113,13 +136,9 @@ class TestService(
         queueRepository.changeStatusToActive(token)
     }
 
-    fun getActiveQueues(): List<Queue> {
-        return queueRepository.findAllActive()
-    }
+    fun getActiveQueues(): List<Queue> = queueRepository.findAllActive()
 
-    fun getPendingQueues(): List<Queue> {
-        return queueRepository.findAllPending()
-    }
+    fun getPendingQueues(): List<Queue> = queueRepository.findAllPending()
 
     fun issueAndActivateQueueToken(): Queue {
         val command = IssueQueueTokenCommand()

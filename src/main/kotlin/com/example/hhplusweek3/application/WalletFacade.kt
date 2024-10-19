@@ -14,9 +14,8 @@ class WalletFacade(
     private val walletService: WalletService,
     private val chargeWalletCommandValidator: ChargeWalletCommandValidator,
     private val getWalletBalanceQueryValidator: GetWalletBalanceQueryValidator,
-    private val walletRepository: WalletRepository
+    private val walletRepository: WalletRepository,
 ) {
-
     fun charge(command: ChargeWalletCommand): Wallet {
         chargeWalletCommandValidator.validate(command)
 

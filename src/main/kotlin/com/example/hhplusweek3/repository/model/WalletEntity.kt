@@ -17,20 +17,19 @@ data class WalletEntity(
     val queueToken: String,
     var balance: Long,
     val createdTimeUtc: Instant,
-    val updatedTimeUtc: Instant
+    val updatedTimeUtc: Instant,
 ) {
-    fun toModel(): Wallet {
-        return Wallet(
+    fun toModel(): Wallet =
+        Wallet(
             balance,
-            queueToken
+            queueToken,
         )
-    }
 
     constructor(wallet: Wallet) : this(
         0,
         wallet.queueToken,
         wallet.balance,
         Instant.now(),
-        Instant.now()
+        Instant.now(),
     )
 }

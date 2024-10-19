@@ -7,7 +7,7 @@ import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
-import com.example.hhplusweek3.testservice.TestService
+import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -21,18 +21,17 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class WalletFacadeIntegrationTest(
     @Autowired private val sut: WalletFacade,
-    @Autowired private val testService: TestService,
+    @Autowired private val testUtils: TestUtils,
     @Autowired private val walletRepository: WalletRepository,
-    @Autowired private val queueRepository: QueueRepository
+    @Autowired private val queueRepository: QueueRepository,
 ) {
-
     private lateinit var activeQueue: Queue
 
     @BeforeEach
     fun setup() {
-        testService.resetQueues()
-        testService.resetWallets()
-        activeQueue = testService.issueAndActivateQueueToken()
+        testUtils.resetQueues()
+        testUtils.resetWallets()
+        activeQueue = testUtils.issueAndActivateQueueToken()
     }
 
     @Test
@@ -41,10 +40,11 @@ class WalletFacadeIntegrationTest(
         val nonActiveQueue = activeQueue.copy(status = QueueStatus.PENDING)
         queueRepository.update(nonActiveQueue)
 
-        val chargeCommand = ChargeWalletCommand(
-            queueToken = nonActiveQueue.token,
-            amount = 1000L
-        )
+        val chargeCommand =
+            ChargeWalletCommand(
+                queueToken = nonActiveQueue.token,
+                amount = 1000L,
+            )
 
         assertThatThrownBy { sut.charge(chargeCommand) }
             .isInstanceOf(RuntimeException::class.java)
@@ -55,10 +55,11 @@ class WalletFacadeIntegrationTest(
     @DisplayName("지갑을 충전할떄 토큰이 존재하지 않는다면, 에러를 반환한다")
     fun `when charge wallet and queue token does not exist, then throw error`() {
         val invalidToken = "invalid-token-123"
-        val chargeCommand = ChargeWalletCommand(
-            queueToken = invalidToken,
-            amount = 1000L
-        )
+        val chargeCommand =
+            ChargeWalletCommand(
+                queueToken = invalidToken,
+                amount = 1000L,
+            )
 
         assertThatThrownBy { sut.charge(chargeCommand) }
             .isInstanceOf(RuntimeException::class.java)
@@ -68,10 +69,11 @@ class WalletFacadeIntegrationTest(
     @Test
     @DisplayName("지갑을 충전할떄 요청이 정상적이라면, 성공한다")
     fun `when charge wallet and command is valid, then succeed`() {
-        val chargeCommand = ChargeWalletCommand(
-            queueToken = activeQueue.token,
-            amount = 5000L
-        )
+        val chargeCommand =
+            ChargeWalletCommand(
+                queueToken = activeQueue.token,
+                amount = 5000L,
+            )
 
         val wallet = sut.charge(chargeCommand)
 
@@ -83,11 +85,12 @@ class WalletFacadeIntegrationTest(
     @Test
     @DisplayName("지갑을 충전할떄 처음으로 충전한다면, 지갑을 자동 생성하고 저장한다")
     fun `when charge wallet and it is first time, then auto generate wallet and save`() {
-        val newQueueToken = testService.issueAndActivateQueueToken().token
-        val chargeCommand = ChargeWalletCommand(
-            queueToken = newQueueToken,
-            amount = 3000L
-        )
+        val newQueueToken = testUtils.issueAndActivateQueueToken().token
+        val chargeCommand =
+            ChargeWalletCommand(
+                queueToken = newQueueToken,
+                amount = 3000L,
+            )
 
         val wallet = sut.charge(chargeCommand)
 
@@ -103,16 +106,18 @@ class WalletFacadeIntegrationTest(
     @Test
     @DisplayName("지갑을 충전할떄 지갑이 존재한다면, 존재하는 지갑에 더하고, 업데이트된 지갑을 저장한다")
     fun `when charge wallet and there already is a wallet, then add amount and update the wallet`() {
-        val initialChargeCommand = ChargeWalletCommand(
-            queueToken = activeQueue.token,
-            amount = 2000L
-        )
-        val initialWallet = sut.charge(initialChargeCommand)
+        val initialChargeCommand =
+            ChargeWalletCommand(
+                queueToken = activeQueue.token,
+                amount = 2000L,
+            )
+        sut.charge(initialChargeCommand)
 
-        val secondChargeCommand = ChargeWalletCommand(
-            queueToken = activeQueue.token,
-            amount = 3000L
-        )
+        val secondChargeCommand =
+            ChargeWalletCommand(
+                queueToken = activeQueue.token,
+                amount = 3000L,
+            )
         val updatedWallet = sut.charge(secondChargeCommand)
 
         assertThat(updatedWallet.balance).isEqualTo(5000L)
@@ -128,9 +133,10 @@ class WalletFacadeIntegrationTest(
         val nonActiveQueue = activeQueue.copy(status = QueueStatus.EXPIRED)
         queueRepository.update(nonActiveQueue)
 
-        val getQuery = GetWalletBalanceQuery(
-            queueToken = nonActiveQueue.token
-        )
+        val getQuery =
+            GetWalletBalanceQuery(
+                queueToken = nonActiveQueue.token,
+            )
 
         assertThatThrownBy { sut.get(getQuery) }
             .isInstanceOf(RuntimeException::class.java)
@@ -141,9 +147,10 @@ class WalletFacadeIntegrationTest(
     @DisplayName("지갑을 조회할때 토큰이 존재하지 않는다면, 에러를 반환한다")
     fun `when get wallet and queue token does not exist, then throw error`() {
         val invalidToken = "invalid-token-789"
-        val getQuery = GetWalletBalanceQuery(
-            queueToken = invalidToken
-        )
+        val getQuery =
+            GetWalletBalanceQuery(
+                queueToken = invalidToken,
+            )
 
         assertThatThrownBy { sut.get(getQuery) }
             .isInstanceOf(RuntimeException::class.java)
@@ -153,11 +160,12 @@ class WalletFacadeIntegrationTest(
     @Test
     @DisplayName("지갑을 조회할떄 지갑이 존재하지 않는다면 0원 지갑을 반환한다")
     fun `when get wallet and wallet does not exist, then return 0 balance wallet`() {
-        val newQueueToken = testService.issueAndActivateQueueToken().token
+        val newQueueToken = testUtils.issueAndActivateQueueToken().token
 
-        val getQuery = GetWalletBalanceQuery(
-            queueToken = newQueueToken
-        )
+        val getQuery =
+            GetWalletBalanceQuery(
+                queueToken = newQueueToken,
+            )
 
         val wallet = sut.get(getQuery)
 
@@ -169,15 +177,17 @@ class WalletFacadeIntegrationTest(
     @Test
     @DisplayName("지갑을 조회할떄 지갑이 존재한다면, 지갑을 반환한다")
     fun `when get wallet and wallet exists, then return existing wallet`() {
-        val chargeCommand = ChargeWalletCommand(
-            queueToken = activeQueue.token,
-            amount = 4000L
-        )
+        val chargeCommand =
+            ChargeWalletCommand(
+                queueToken = activeQueue.token,
+                amount = 4000L,
+            )
         val wallet = sut.charge(chargeCommand)
 
-        val getQuery = GetWalletBalanceQuery(
-            queueToken = activeQueue.token
-        )
+        val getQuery =
+            GetWalletBalanceQuery(
+                queueToken = activeQueue.token,
+            )
 
         val retrievedWallet = sut.get(getQuery)
 

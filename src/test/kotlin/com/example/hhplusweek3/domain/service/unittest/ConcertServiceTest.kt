@@ -17,17 +17,17 @@ import org.mockito.kotlin.verifyNoInteractions
 import java.time.Instant
 
 class ConcertServiceTest {
-
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
     private val mockReservationRepository = mock(ReservationRepository::class.java)
     private lateinit var concertService: ConcertService
 
     @BeforeEach
     fun setUp() {
-        concertService = ConcertService(
-            concertSeatRepository = mockConcertSeatRepository,
-            reservationRepository = mockReservationRepository
-        )
+        concertService =
+            ConcertService(
+                concertSeatRepository = mockConcertSeatRepository,
+                reservationRepository = mockReservationRepository,
+            )
     }
 
     @Test
@@ -45,10 +45,11 @@ class ConcertServiceTest {
         val result = concertService.getAvailableSchedules()
 
         // then
-        val expectedSchedules = listOf(
-            Concert.Schedule(date = seat1.dateUtc, seats = listOf(Concert.Seat(number = 1L))),
-            Concert.Schedule(date = seat2.dateUtc, seats = listOf(Concert.Seat(number = 2L)))
-        )
+        val expectedSchedules =
+            listOf(
+                Concert.Schedule(date = seat1.dateUtc, seats = listOf(Concert.Schedule.Seat(number = 1L))),
+                Concert.Schedule(date = seat2.dateUtc, seats = listOf(Concert.Schedule.Seat(number = 2L))),
+            )
 
         assertEquals(expectedSchedules, result)
 
@@ -72,9 +73,10 @@ class ConcertServiceTest {
         val result = concertService.getAvailableSchedules()
 
         // then
-        val expectedSchedules = listOf(
-            Concert.Schedule(date = seat2.dateUtc, seats = listOf(Concert.Seat(number = 2L)))
-        )
+        val expectedSchedules =
+            listOf(
+                Concert.Schedule(date = seat2.dateUtc, seats = listOf(Concert.Schedule.Seat(number = 2L))),
+            )
 
         assertEquals(expectedSchedules, result)
 
@@ -98,9 +100,10 @@ class ConcertServiceTest {
         val result = concertService.getAvailableSeatsByDate(date)
 
         // then
-        val expectedSeats = listOf(
-            Concert.Seat(number = 2L)
-        )
+        val expectedSeats =
+            listOf(
+                Concert.Schedule.Seat(number = 2L),
+            )
 
         assertEquals(expectedSeats, result)
 
@@ -121,10 +124,11 @@ class ConcertServiceTest {
         val result = concertService.getAllSeatsByDate(date)
 
         // then
-        val expectedSeats = listOf(
-            Concert.Seat(number = 1L),
-            Concert.Seat(number = 2L)
-        )
+        val expectedSeats =
+            listOf(
+                Concert.Schedule.Seat(number = 1L),
+                Concert.Schedule.Seat(number = 2L),
+            )
 
         assertEquals(expectedSeats, result)
 
@@ -132,14 +136,20 @@ class ConcertServiceTest {
         verifyNoInteractions(mockReservationRepository)
     }
 
-    private fun mockConcertSeat(dateUtc: Instant, seatNumber: Long): ConcertSeat {
+    private fun mockConcertSeat(
+        dateUtc: Instant,
+        seatNumber: Long,
+    ): ConcertSeat {
         val seat = mock(ConcertSeat::class.java)
         `when`(seat.dateUtc).thenReturn(dateUtc)
         `when`(seat.seatNumber).thenReturn(seatNumber)
         return seat
     }
 
-    private fun mockReservation(seatNumber: Long, dateUtc: Instant): Reservation {
+    private fun mockReservation(
+        seatNumber: Long,
+        dateUtc: Instant,
+    ): Reservation {
         val reservation = mock(Reservation::class.java)
         `when`(reservation.reservedSeat).thenReturn(seatNumber)
         `when`(reservation.dateTimeUtc).thenReturn(dateUtc)
