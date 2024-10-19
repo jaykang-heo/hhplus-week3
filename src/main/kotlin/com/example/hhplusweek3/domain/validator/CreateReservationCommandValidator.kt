@@ -4,20 +4,20 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
-import com.example.hhplusweek3.domain.port.ReservationRepository
+import com.example.hhplusweek3.domain.service.ReservationService
 import org.springframework.stereotype.Component
 
 @Component
 class CreateReservationCommandValidator(
-    private val reservationRepository: ReservationRepository,
     private val queueRepository: QueueRepository,
-    private val concertSeatRepository: ConcertSeatRepository
+    private val concertSeatRepository: ConcertSeatRepository,
+    private val reservationService: ReservationService,
 ) {
-
     fun validate(command: CreateReservationCommand) {
         command.validate()
-        val queue = queueRepository.findByToken(command.token)
-            ?: throw RuntimeException("${command.token} not found")
+        val queue =
+            queueRepository.findByToken(command.token)
+                ?: throw RuntimeException("${command.token} not found")
 
         if (queue.status != QueueStatus.ACTIVE) {
             throw RuntimeException("queue status must be active ${queue.status}")
@@ -28,14 +28,9 @@ class CreateReservationCommandValidator(
             throw RuntimeException("concert by date ${command.dateUtc} and seat number ${command.seatNumber} not found")
         }
 
-        val alreadyReserved = reservationRepository.findReservationBySeatNumberAndDate(command.dateUtc, command.seatNumber)
-        if (alreadyReserved != null) {
-            throw RuntimeException("Seat ${command.seatNumber} by date ${command.dateUtc} already reserved")
-        }
-
-        val existingReservation = reservationRepository.findByToken(command.token)
-        if (existingReservation != null) {
-            throw RuntimeException("Token ${command.token} already reserved seat ${existingReservation.reservedSeat}, date ${command.dateUtc}")
+        val isValid = reservationService.isValid(command.dateUtc, command.seatNumber, command.token)
+        if (!isValid) {
+            throw RuntimeException("Cannot make reservation for ${command.dateUtc} and seat number ${command.seatNumber}.")
         }
     }
 }

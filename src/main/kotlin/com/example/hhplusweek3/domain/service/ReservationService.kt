@@ -6,14 +6,33 @@ import java.time.Instant
 
 @Component
 class ReservationService(
-    private val reservationRepository: ReservationRepository
+    private val reservationRepository: ReservationRepository,
 ) {
-
-    fun deleteIfExpired(date: Instant, seatNumber: Long) {
+    fun deleteIfExpired(
+        date: Instant,
+        seatNumber: Long,
+    ) {
         val now = Instant.now()
         val reservation = reservationRepository.findBySeatNumberAndDate(seatNumber, date) ?: return
         if (reservation.expirationTimeUtc < now && reservation.paymentId == null) {
             reservationRepository.deleteByReservationId(reservation.id)
         }
+    }
+
+    fun isValid(
+        dateUtc: Instant,
+        seatNumber: Long,
+        queueToken: String,
+    ): Boolean {
+        val alreadyReserved = reservationRepository.findReservationBySeatNumberAndDate(dateUtc, seatNumber)
+        if (alreadyReserved != null) {
+            return false
+        }
+
+        val existingReservation = reservationRepository.findByToken(queueToken)
+        if (existingReservation != null) {
+            return false
+        }
+        return true
     }
 }
