@@ -157,7 +157,7 @@ class ReservationFacadeIntegrationTest(
 
         assertThatThrownBy { sut.reserve(duplicateReservationCommand) }
             .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Seat $testSeatNumber by date $testDate already reserved")
+            .hasMessageContaining("Cannot make reservation")
     }
 
     @Test
@@ -180,7 +180,7 @@ class ReservationFacadeIntegrationTest(
 
         assertThatThrownBy { sut.reserve(secondReservationCommand) }
             .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Token ${activeQueue.token} already reserved seat $testSeatNumber, date $testDate")
+            .hasMessageContaining("Cannot make reservation")
     }
 
     @Test

@@ -2,6 +2,8 @@ package com.example.hhplusweek3.testservice
 
 import com.example.hhplusweek3.application.QueueFacade
 import com.example.hhplusweek3.application.ReservationFacade
+import com.example.hhplusweek3.application.WalletFacade
+import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.model.Queue
@@ -27,6 +29,7 @@ class TestUtils(
     private val reservationEntityJpaRepository: ReservationEntityJpaRepository,
     private val queueRepository: QueueRepository,
     private val walletEntityJpaRepository: WalletEntityJpaRepository,
+    private val walletFacade: WalletFacade,
 ) {
     fun resetDatabase() {
         queueEntityJpaRepository.deleteAll()
@@ -54,8 +57,10 @@ class TestUtils(
                 .plusDays(2)
                 .atStartOfDay()
                 .toInstant(ZoneOffset.UTC)
+        walletFacade.charge(ChargeWalletCommand(1000L, token))
         val command = CreateReservationCommand(token, 1L, date)
-        return reservationFacade.reserve(command)
+        val reservation = reservationFacade.reserve(command)
+        return reservation
     }
 
     fun resetConcertSeats(

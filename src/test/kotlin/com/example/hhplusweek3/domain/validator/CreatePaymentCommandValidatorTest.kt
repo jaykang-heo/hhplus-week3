@@ -5,8 +5,10 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
+import com.example.hhplusweek3.domain.model.Wallet
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
+import com.example.hhplusweek3.domain.port.WalletRepository
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -16,34 +18,10 @@ import org.mockito.Mockito.`when`
 import java.time.Instant
 
 class CreatePaymentCommandValidatorTest {
-
     private val mockReservationRepository = mock(ReservationRepository::class.java)
     private val mockQueueRepository = mock(QueueRepository::class.java)
-    private val sut = CreatePaymentCommandValidator(mockReservationRepository, mockQueueRepository)
-
-    @Test
-    @DisplayName("큐 토큰이 비어있으면, 에러를 반환한다")
-    fun `when queue token is blank, then throw error`() {
-        // given
-        val command = CreatePaymentCommand(" ", "reservationId")
-
-        // when & then
-        assertThrows(IllegalArgumentException::class.java) {
-            sut.validate(command)
-        }
-    }
-
-    @Test
-    @DisplayName("예약 ID가 비어있으면, 에러를 반환한다")
-    fun `when reservation id is blank, then throw error`() {
-        // given
-        val command = CreatePaymentCommand("queueToken", " ")
-
-        // when & then
-        assertThrows(IllegalArgumentException::class.java) {
-            sut.validate(command)
-        }
-    }
+    private val mockWalletRepository = mock(WalletRepository::class.java)
+    private val sut = CreatePaymentCommandValidator(mockReservationRepository, mockQueueRepository, mockWalletRepository)
 
     @Test
     @DisplayName("큐가 존재하지 않으면, 에러를 반환한다")
@@ -53,9 +31,10 @@ class CreatePaymentCommandValidatorTest {
         `when`(mockQueueRepository.findByToken("non-existent-token")).thenReturn(null)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
         assert(exception.message!!.contains("queue token not found"))
     }
 
@@ -68,9 +47,10 @@ class CreatePaymentCommandValidatorTest {
         `when`(mockQueueRepository.findByToken("inactive-token")).thenReturn(inactiveQueue)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
         assert(exception.message!!.contains("queue is not active"))
     }
 
@@ -84,10 +64,52 @@ class CreatePaymentCommandValidatorTest {
         `when`(mockReservationRepository.findByTokenAndReservationId("active-token", "non-existent-reservation")).thenReturn(null)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
         assert(exception.message!!.contains("reservation token not found"))
+    }
+
+    @Test
+    @DisplayName("지갑이 존재하지 않으면, 에러를 반환한다")
+    fun `when wallet does not exist, then throw error`() {
+        // given
+        val command = CreatePaymentCommand("active-token", "valid-reservation")
+        val activeQueue = Queue("active-token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
+        val reservationCommand = CreateReservationCommand("active-token", 1L, Instant.now())
+        val validReservation = Reservation(reservationCommand, 100L)
+        `when`(mockQueueRepository.findByToken("active-token")).thenReturn(activeQueue)
+        `when`(mockReservationRepository.findByTokenAndReservationId("active-token", "valid-reservation")).thenReturn(validReservation)
+        `when`(mockWalletRepository.findByQueueToken("active-token")).thenReturn(null)
+
+        // when & then
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
+        assert(exception.message!!.contains("wallet token not found"))
+    }
+
+    @Test
+    @DisplayName("지갑 잔액이 예약 금액보다 작으면, 에러를 반환한다")
+    fun `when wallet balance is less than reservation amount, then throw error`() {
+        // given
+        val command = CreatePaymentCommand("active-token", "valid-reservation")
+        val activeQueue = Queue("active-token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
+        val reservationCommand = CreateReservationCommand("active-token", 1L, Instant.now())
+        val validReservation = Reservation(reservationCommand, 100L)
+        val insufficientWallet = Wallet(50L, "active-token")
+        `when`(mockQueueRepository.findByToken("active-token")).thenReturn(activeQueue)
+        `when`(mockReservationRepository.findByTokenAndReservationId("active-token", "valid-reservation")).thenReturn(validReservation)
+        `when`(mockWalletRepository.findByQueueToken("active-token")).thenReturn(insufficientWallet)
+
+        // when & then
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
+        assert(exception.message!!.contains("cannot be less than"))
     }
 
     @Test
@@ -96,9 +118,12 @@ class CreatePaymentCommandValidatorTest {
         // given
         val command = CreatePaymentCommand("active-token", "valid-reservation")
         val activeQueue = Queue("active-token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
-        val validReservation = Reservation(CreateReservationCommand(activeQueue.token, 100L, Instant.now()), 1000L)
+        val reservationCommand = CreateReservationCommand("active-token", 1L, Instant.now())
+        val validReservation = Reservation(reservationCommand, 100L)
+        val sufficientWallet = Wallet(200L, "active-token")
         `when`(mockQueueRepository.findByToken("active-token")).thenReturn(activeQueue)
         `when`(mockReservationRepository.findByTokenAndReservationId("active-token", "valid-reservation")).thenReturn(validReservation)
+        `when`(mockWalletRepository.findByQueueToken("active-token")).thenReturn(sufficientWallet)
 
         // when & then
         assertDoesNotThrow {

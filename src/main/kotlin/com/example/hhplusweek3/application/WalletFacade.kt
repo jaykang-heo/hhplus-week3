@@ -18,9 +18,8 @@ class WalletFacade(
 ) {
     fun charge(command: ChargeWalletCommand): Wallet {
         chargeWalletCommandValidator.validate(command)
-
-        val wallet = walletService.add(command.amount, command.queueToken)
-        return walletRepository.save(wallet)
+        walletService.add(command.amount, command.queueToken)
+        return walletRepository.getByQueueToken(command.queueToken)
     }
 
     fun get(query: GetWalletBalanceQuery): Wallet {

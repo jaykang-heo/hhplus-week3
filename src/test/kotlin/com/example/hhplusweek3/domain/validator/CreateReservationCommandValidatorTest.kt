@@ -7,6 +7,7 @@ import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
+import com.example.hhplusweek3.domain.service.ReservationService
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,11 +16,11 @@ import org.mockito.Mockito.`when`
 import java.time.Instant
 
 class CreateReservationCommandValidatorTest {
-
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val mockReservationRepository = mock(ReservationRepository::class.java)
-    private val sut = CreateReservationCommandValidator(mockReservationRepository, mockQueueRepository, mockConcertSeatRepository)
+    private val mockReservationService = mock(ReservationService::class.java)
+    private val sut = CreateReservationCommandValidator(mockQueueRepository, mockConcertSeatRepository, mockReservationService)
 
     @Test
     @DisplayName("대기열이 존재하지 않는다면 에러를 반환한다")
@@ -29,9 +30,10 @@ class CreateReservationCommandValidatorTest {
         `when`(mockQueueRepository.findByToken("non-existent-token")).thenReturn(null)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
         assert(exception.message!!.contains("not found"))
     }
 
@@ -44,9 +46,10 @@ class CreateReservationCommandValidatorTest {
         `when`(mockQueueRepository.findByToken("inactive-token")).thenReturn(inactiveQueue)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
         assert(exception.message!!.contains("queue status must be active"))
     }
 
@@ -61,9 +64,10 @@ class CreateReservationCommandValidatorTest {
         `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(false)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
         assert(exception.message!!.contains("concert by date"))
     }
 
@@ -79,10 +83,11 @@ class CreateReservationCommandValidatorTest {
         `when`(mockReservationRepository.findReservationBySeatNumberAndDate(date, 1L)).thenReturn(Reservation(command, 100L))
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
-        assert(exception.message!!.contains("already reserved"))
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
+        assert(exception.message!!.contains("Cannot make reservation"))
     }
 
     @Test
@@ -99,9 +104,10 @@ class CreateReservationCommandValidatorTest {
         `when`(mockReservationRepository.findByToken("token")).thenReturn(existingReservation)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
-        assert(exception.message!!.contains("already reserved seat"))
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(command)
+            }
+        assert(exception.message!!.contains("Cannot make reservation"))
     }
 }

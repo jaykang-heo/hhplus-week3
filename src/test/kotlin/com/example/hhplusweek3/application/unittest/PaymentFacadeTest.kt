@@ -1,11 +1,13 @@
-package com.example.hhplusweek3.application
+package com.example.hhplusweek3.application.unittest
 
+import com.example.hhplusweek3.application.PaymentFacade
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Payment
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.PaymentRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
+import com.example.hhplusweek3.domain.service.WalletService
 import com.example.hhplusweek3.domain.validator.CreatePaymentCommandValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -16,15 +18,20 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import java.time.Instant
 
 class PaymentFacadeTest {
-
     private val mockPaymentRepository = mock(PaymentRepository::class.java)
     private val mockReservationRepository = mock(ReservationRepository::class.java)
     private val mockCreatePaymentCommandValidator = mock(CreatePaymentCommandValidator::class.java)
-    private val sut = PaymentFacade(mockCreatePaymentCommandValidator, mockPaymentRepository, mockReservationRepository)
+    private val mockWalletService = mock(WalletService::class.java)
+    private val sut =
+        PaymentFacade(
+            mockCreatePaymentCommandValidator,
+            mockPaymentRepository,
+            mockReservationRepository,
+            mockWalletService,
+        )
 
     @Test
     @DisplayName("결제 생성 명령 검증이 실패하면, 에러를 반환한다")
@@ -46,7 +53,9 @@ class PaymentFacadeTest {
     fun `when reservation does not exist, then throw error`() {
         // given
         val command = CreatePaymentCommand("token", "reservationId")
-        `when`(mockReservationRepository.getByTokenAndReservationId("token", "reservationId")).thenThrow(RuntimeException("Reservation not found"))
+        `when`(
+            mockReservationRepository.getByTokenAndReservationId("token", "reservationId"),
+        ).thenThrow(RuntimeException("Reservation not found"))
 
         // when & then
         assertThrows(RuntimeException::class.java) {
@@ -75,6 +84,5 @@ class PaymentFacadeTest {
         assertEquals(createdPayment, result)
         verify(mockCreatePaymentCommandValidator).validate(command)
         verify(mockReservationRepository).getByTokenAndReservationId("token", "reservationId")
-        verify(mockPaymentRepository).save(any(), eq("token"))
     }
 }

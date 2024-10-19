@@ -18,17 +18,17 @@ import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 
 class WalletFacadeTest {
-
     private val mockWalletRepository = mock(WalletRepository::class.java)
     private val mockChargeWalletCommandValidator = mock(ChargeWalletCommandValidator::class.java)
     private val mockGetWalletBalanceQueryValidator = mock(GetWalletBalanceQueryValidator::class.java)
     private val mockWalletService = mock(WalletService::class.java)
-    private val sut = WalletFacade(
-        mockWalletService,
-        mockChargeWalletCommandValidator,
-        mockGetWalletBalanceQueryValidator,
-        mockWalletRepository
-    )
+    private val sut =
+        WalletFacade(
+            mockWalletService,
+            mockChargeWalletCommandValidator,
+            mockGetWalletBalanceQueryValidator,
+            mockWalletRepository,
+        )
 
     @Test
     @DisplayName("충전 명령 검증이 실패하면, 실행을 중단한다")
@@ -36,7 +36,8 @@ class WalletFacadeTest {
         // given
         val command = ChargeWalletCommand(100L, "token")
         doThrow(IllegalArgumentException("Invalid command"))
-            .`when`(mockChargeWalletCommandValidator).validate(command)
+            .`when`(mockChargeWalletCommandValidator)
+            .validate(command)
 
         // when & then
         assertThrows(IllegalArgumentException::class.java) {
@@ -56,8 +57,7 @@ class WalletFacadeTest {
         val walletFromService = Wallet(100L, "token")
         val savedWallet = Wallet(100L, "token")
 
-        `when`(mockWalletService.add(100L, "token")).thenReturn(walletFromService)
-        `when`(mockWalletRepository.save(walletFromService)).thenReturn(savedWallet)
+        `when`(mockWalletRepository.getByQueueToken(walletFromService.queueToken)).thenReturn(savedWallet)
 
         // when
         val result = sut.charge(command)
@@ -66,7 +66,7 @@ class WalletFacadeTest {
         assertEquals(savedWallet, result)
         verify(mockChargeWalletCommandValidator).validate(command)
         verify(mockWalletService).add(100L, "token")
-        verify(mockWalletRepository).save(walletFromService)
+        verify(mockWalletRepository).getByQueueToken(walletFromService.queueToken)
     }
 
     @Test
@@ -75,7 +75,8 @@ class WalletFacadeTest {
         // given
         val query = GetWalletBalanceQuery("token")
         doThrow(IllegalArgumentException("Invalid query"))
-            .`when`(mockGetWalletBalanceQueryValidator).validate(query)
+            .`when`(mockGetWalletBalanceQueryValidator)
+            .validate(query)
 
         // when & then
         assertThrows(IllegalArgumentException::class.java) {

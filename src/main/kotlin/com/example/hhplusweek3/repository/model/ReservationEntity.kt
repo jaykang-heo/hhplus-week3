@@ -22,32 +22,31 @@ class ReservationEntity(
     val amount: Long,
     val createdTimeUtc: Instant,
     val updatedTimeUtc: Instant,
-    val expirationTimeUtc: Instant
+    val expirationTimeUtc: Instant,
 ) {
-    fun toModel(): Reservation {
-        return Reservation(
+    fun toModel(): Reservation =
+        Reservation(
             reservationId,
             paymentId,
-            queueToken,
+            queueToken = queueToken,
             reservedDateUtc,
             reservedSeatNumber,
             amount,
             createdTimeUtc,
             updatedTimeUtc,
-            expirationTimeUtc
+            expirationTimeUtc,
         )
-    }
 
     constructor(reservation: Reservation) : this(
         0,
         reservation.id,
         reservation.paymentId,
-        reservation.queueToken,
+        queueToken = reservation.queueToken,
         reservation.reservedSeat,
         reservation.dateTimeUtc,
         reservation.amount,
         reservation.createdTimeUtc,
         reservation.updatedTimeUtc,
-        reservation.expirationTimeUtc
+        reservation.expirationTimeUtc,
     )
 }
