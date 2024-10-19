@@ -18,16 +18,16 @@ class QueueRepositoryImpl(
         return queueEntityJpaRepository.save(entity).toModel()
     }
 
-    override fun findAllByActiveAndBeforeTime(time: Instant): List<Queue> {
-        return queueEntityJpaRepository
-            .findAllByStatusAndExpirationTimeUtcBefore(QueueStatus.ACTIVE, time)
-            .map { it.toModel() }
-    }
-
     override fun update(queue: Queue): Queue {
         val entity = QueueEntity(queue)
         entity.id = queueEntityJpaRepository.findByToken(entity.token)!!.id
         return queueEntityJpaRepository.save(entity).toModel()
+    }
+
+    override fun findAllByActiveAndBeforeTime(time: Instant): List<Queue> {
+        return queueEntityJpaRepository
+            .findAllByStatusAndExpirationTimeUtcBefore(QueueStatus.ACTIVE, time)
+            .map { it.toModel() }
     }
 
     @Transactional
