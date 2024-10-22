@@ -2,6 +2,11 @@ package com.example.hhplusweek3.domain.validator
 
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.InsufficientBalanceException
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
+import com.example.hhplusweek3.domain.model.exception.ReservationNotFoundException
+import com.example.hhplusweek3.domain.model.exception.WalletNotFoundException
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
@@ -18,21 +23,22 @@ class CreatePaymentCommandValidator(
 
         val queue =
             queueRepository.findByToken(command.queueToken)
-                ?: throw RuntimeException("queue token not found. ${command.queueToken}")
+                ?: throw QueueNotFoundException(command.queueToken)
 
         if (queue.status != QueueStatus.ACTIVE) {
-            throw RuntimeException("queue is not active. ${queue.status}")
+            throw InvalidQueueStatusException(queue.status)
         }
 
         val reservation =
             reservationRepository.findByTokenAndReservationId(command.queueToken, command.reservationId)
-                ?: throw RuntimeException("reservation token not found by ${command.queueToken} and ${command.reservationId}")
+                ?: throw ReservationNotFoundException(command.queueToken, command.reservationId)
 
         val wallet =
             walletRepository.findByQueueToken(command.queueToken)
-                ?: throw RuntimeException("wallet token not found by ${command.queueToken}")
+                ?: throw WalletNotFoundException(command.queueToken)
+
         if (wallet.balance < reservation.amount) {
-            throw RuntimeException("${wallet.balance} cannot be less than ${reservation.amount}")
+            throw InsufficientBalanceException(wallet.balance, reservation.amount)
         }
     }
 }

@@ -2,6 +2,10 @@ package com.example.hhplusweek3.domain.validator
 
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.ConcertSeatNotFoundException
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.InvalidReservationException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.service.ReservationService
@@ -17,20 +21,20 @@ class CreateReservationCommandValidator(
         command.validate()
         val queue =
             queueRepository.findByToken(command.token)
-                ?: throw RuntimeException("${command.token} not found")
+                ?: throw QueueNotFoundException(command.token)
 
         if (queue.status != QueueStatus.ACTIVE) {
-            throw RuntimeException("queue status must be active ${queue.status}")
+            throw InvalidQueueStatusException(queue.status)
         }
 
         val isExists = concertSeatRepository.existsByDateAndSeatNumber(command.dateUtc, command.seatNumber)
         if (!isExists) {
-            throw RuntimeException("concert by date ${command.dateUtc} and seat number ${command.seatNumber} not found")
+            throw ConcertSeatNotFoundException(command.dateUtc, command.seatNumber)
         }
 
         val isValid = reservationService.isValid(command.dateUtc, command.seatNumber, command.token)
         if (!isValid) {
-            throw RuntimeException("Cannot make reservation for ${command.dateUtc} and seat number ${command.seatNumber}.")
+            throw InvalidReservationException(command.dateUtc, command.seatNumber, command.token)
         }
     }
 }
