@@ -4,6 +4,8 @@ import com.example.hhplusweek3.application.WalletFacade
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
@@ -47,8 +49,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.charge(chargeCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue is not active")
+            .isInstanceOf(InvalidQueueStatusException::class.java)
+            .hasMessageContaining(InvalidQueueStatusException(nonActiveQueue.status).message)
     }
 
     @Test
@@ -62,8 +64,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.charge(chargeCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue not found by $invalidToken")
+            .isInstanceOf(QueueNotFoundException::class.java)
+            .hasMessageContaining(QueueNotFoundException(chargeCommand.queueToken).message)
     }
 
     @Test
@@ -139,8 +141,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.get(getQuery) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Queue status is not active")
+            .isInstanceOf(InvalidQueueStatusException::class.java)
+            .hasMessageContaining(InvalidQueueStatusException(nonActiveQueue.status).message)
     }
 
     @Test
@@ -153,8 +155,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.get(getQuery) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Queue not found by $invalidToken")
+            .isInstanceOf(QueueNotFoundException::class.java)
+            .hasMessageContaining(QueueNotFoundException(getQuery.queueToken).message)
     }
 
     @Test

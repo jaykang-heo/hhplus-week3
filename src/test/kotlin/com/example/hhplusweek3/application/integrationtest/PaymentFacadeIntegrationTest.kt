@@ -2,6 +2,7 @@ package com.example.hhplusweek3.application.integrationtest
 
 import com.example.hhplusweek3.application.PaymentFacade
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
+import com.example.hhplusweek3.domain.model.exception.ReservationNotFoundException
 import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -24,8 +25,8 @@ class PaymentFacadeIntegrationTest(
         val command = CreatePaymentCommand(queueToken, UUID.randomUUID().toString())
 
         // when, then
-        val actual = assertThrows<RuntimeException> { sut.createPayment(command) }
-        assertThat(actual.message).contains("reservation token not found by")
+        val actual = assertThrows<ReservationNotFoundException> { sut.createPayment(command) }
+        assertThat(actual.message).contains("Reservation not found with token")
     }
 
     @Test

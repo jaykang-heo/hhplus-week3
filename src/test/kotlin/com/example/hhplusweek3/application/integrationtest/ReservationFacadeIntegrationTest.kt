@@ -5,6 +5,8 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
+import com.example.hhplusweek3.domain.model.exception.ConcertSeatNotFoundException
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.testservice.TestUtils
@@ -45,7 +47,6 @@ class ReservationFacadeIntegrationTest(
         testUtils.resetDatabase()
         testUtils.resetReservations()
         testUtils.resetConcertSeats()
-        testUtils.createConcertSeats(testDate, totalSeats = 100)
         activeQueue = testUtils.issueAndActivateQueueToken()
     }
 
@@ -104,8 +105,8 @@ class ReservationFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.reserve(reservationCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue status must be active EXPIRED")
+            .isInstanceOf(InvalidQueueStatusException::class.java)
+            .hasMessageContaining("Queue is not active. Current status: EXPIRED")
     }
 
     @Test
@@ -124,8 +125,8 @@ class ReservationFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.reserve(reservationCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue status must be active PENDING")
+            .isInstanceOf(InvalidQueueStatusException::class.java)
+            .hasMessageContaining("Queue is not active. Current status: PENDING")
     }
 
     @Test
@@ -140,8 +141,8 @@ class ReservationFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.reserve(reservationCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("concert by date $testDate and seat number $nonExistentSeatNumber not found")
+            .isInstanceOf(ConcertSeatNotFoundException::class.java)
+            .hasMessageContaining("Concert seat not found for date:")
     }
 
     @Test
