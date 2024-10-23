@@ -15,10 +15,15 @@ import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.ReservationEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.WalletEntityJpaRepository
 import com.example.hhplusweek3.repository.model.ConcertSeatEntity
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @Service
 class TestUtils(
@@ -150,5 +155,44 @@ class TestUtils(
         val queue = queueFacade.issue(command)
         queueRepository.changeStatusToActive(queue.token)
         return queue.copy(status = QueueStatus.ACTIVE)
+    }
+
+    fun <T> asyncRun(
+        threadCount: Int,
+        commands: List<T>,
+        action: (T) -> Unit,
+    ) {
+        val startLatch = CountDownLatch(1)
+        val endLatch = CountDownLatch(threadCount)
+        val executor = Executors.newFixedThreadPool(threadCount)
+
+        try {
+            val futures =
+                commands.map { command ->
+                    CompletableFuture.supplyAsync({
+                        try {
+                            startLatch.await()
+                            action(command)
+                            null
+                        } catch (e: Exception) {
+                            logger.error { e }
+                            throw e
+                        } finally {
+                            endLatch.countDown()
+                        }
+                    }, executor)
+                }
+
+            startLatch.countDown()
+            endLatch.await()
+            futures.forEach { it.join() }
+        } finally {
+            executor.shutdown()
+            executor.awaitTermination(10, TimeUnit.SECONDS)
+        }
+    }
+
+    companion object {
+        val logger = KotlinLogging.logger(TestUtils::class.java.name)
     }
 }

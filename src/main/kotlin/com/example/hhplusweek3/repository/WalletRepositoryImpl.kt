@@ -21,4 +21,7 @@ class WalletRepositoryImpl(
     override fun getByQueueToken(queueToken: String): Wallet = walletEntityJpaRepository.findByQueueToken(queueToken)!!.toModel()
 
     override fun findByQueueToken(queueToken: String): Wallet? = walletEntityJpaRepository.findByQueueToken(queueToken)?.toModel()
+
+    override fun findByQueueTokenWithLock(queueToken: String): Wallet? =
+        walletEntityJpaRepository.findByQueueTokenWithLock(queueToken)?.toModel()
 }

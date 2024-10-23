@@ -27,4 +27,12 @@ class WalletService(
         wallet.balance -= amount
         walletRepository.save(wallet)
     }
+
+    fun executeWithLock(
+        queueToken: String,
+        action: () -> Unit,
+    ) {
+        walletRepository.findByQueueTokenWithLock(queueToken)
+        action.invoke()
+    }
 }
