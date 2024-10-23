@@ -6,9 +6,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class IssueQueueTokenCommandValidator(
-    private val queueLimitRepository: QueueLimitRepository
+    private val queueLimitRepository: QueueLimitRepository,
 ) {
-
     fun validate(command: IssueQueueTokenCommand) {
         val queueLimit = queueLimitRepository.getQueueLimit()
         if (queueLimit.issueCount >= queueLimit.issueLimitCount) {

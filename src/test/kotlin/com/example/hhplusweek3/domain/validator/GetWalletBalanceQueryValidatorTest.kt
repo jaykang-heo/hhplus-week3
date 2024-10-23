@@ -13,7 +13,6 @@ import org.mockito.Mockito.`when`
 import java.time.Instant
 
 class GetWalletBalanceQueryValidatorTest {
-
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val sut = GetWalletBalanceQueryValidator(mockQueueRepository)
 
@@ -37,9 +36,10 @@ class GetWalletBalanceQueryValidatorTest {
         `when`(mockQueueRepository.findByToken("non-existent-token")).thenReturn(null)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(query)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(query)
+            }
         assert(exception.message!!.contains("Queue not found"))
     }
 
@@ -48,19 +48,21 @@ class GetWalletBalanceQueryValidatorTest {
     fun `when queue is not active, then throw error`() {
         // given
         val query = GetWalletBalanceQuery("inactive-token")
-        val inactiveQueue = Queue(
-            token = "inactive-token",
-            status = QueueStatus.PENDING,
-            createdTimeUtc = Instant.now(),
-            updatedTimeUtc = Instant.now(),
-            expirationTimeUtc = Instant.now().plusSeconds(3600)
-        )
+        val inactiveQueue =
+            Queue(
+                token = "inactive-token",
+                status = QueueStatus.PENDING,
+                createdTimeUtc = Instant.now(),
+                updatedTimeUtc = Instant.now(),
+                expirationTimeUtc = Instant.now().plusSeconds(3600),
+            )
         `when`(mockQueueRepository.findByToken("inactive-token")).thenReturn(inactiveQueue)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(query)
-        }
+        val exception =
+            assertThrows(RuntimeException::class.java) {
+                sut.validate(query)
+            }
         assert(exception.message!!.contains("Queue status is not active"))
     }
 
@@ -69,13 +71,14 @@ class GetWalletBalanceQueryValidatorTest {
     fun `when queue exists and is active, then validation passes`() {
         // given
         val query = GetWalletBalanceQuery("valid-token")
-        val activeQueue = Queue(
-            token = "valid-token",
-            status = QueueStatus.ACTIVE,
-            createdTimeUtc = Instant.now(),
-            updatedTimeUtc = Instant.now(),
-            expirationTimeUtc = Instant.now().plusSeconds(3600)
-        )
+        val activeQueue =
+            Queue(
+                token = "valid-token",
+                status = QueueStatus.ACTIVE,
+                createdTimeUtc = Instant.now(),
+                updatedTimeUtc = Instant.now(),
+                expirationTimeUtc = Instant.now().plusSeconds(3600),
+            )
         `when`(mockQueueRepository.findByToken("valid-token")).thenReturn(activeQueue)
 
         // when & then

@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
 @SpringBootTest
@@ -29,7 +31,12 @@ class ReservationFacadeIntegrationTest(
     @Autowired private val queueRepository: QueueRepository,
 ) {
     private lateinit var activeQueue: Queue
-    private val testDate: Instant = Instant.parse("2024-10-20T00:00:00Z")
+    private val testDate: Instant =
+        LocalDate
+            .now()
+            .plusDays(2)
+            .atStartOfDay()
+            .toInstant(ZoneOffset.UTC)
     private val testSeatNumber: Long = 1L
 
     @BeforeEach

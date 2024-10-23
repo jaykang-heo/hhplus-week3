@@ -9,12 +9,9 @@ import kotlin.math.abs
 
 @Component
 class QueueService(
-    private val queueRepository: QueueRepository
+    private val queueRepository: QueueRepository,
 ) {
-
-    fun generateQueue(command: IssueQueueTokenCommand): Queue {
-        return Queue(command)
-    }
+    fun generateQueue(command: IssueQueueTokenCommand): Queue = Queue(command)
 
     fun extendExpirationTime(queueToken: String) {
         val queue = queueRepository.findByToken(queueToken) ?: return
@@ -31,12 +28,15 @@ class QueueService(
     }
 
     fun activatePendingQueues() {
-        val pendingQueues = queueRepository.findAllPending()
-            .sortedBy { it.createdTimeUtc }
+        val pendingQueues =
+            queueRepository
+                .findAllPending()
+                .sortedBy { it.createdTimeUtc }
         val activeQueueCount = queueRepository.findAllActive().size
         val availableSlots = abs(ACTIVE_LIMIT - activeQueueCount)
 
-        pendingQueues.take(availableSlots)
+        pendingQueues
+            .take(availableSlots)
             .forEach { queue ->
                 queueRepository.changeStatusToActive(queue.token)
             }
