@@ -11,6 +11,7 @@ import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusExceptio
 import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.model.exception.ReservationNotFoundException
 import com.example.hhplusweek3.domain.model.exception.WalletNotFoundException
+import com.example.hhplusweek3.domain.port.PaymentRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
@@ -26,7 +27,9 @@ class CreatePaymentCommandValidatorTest {
     private val mockReservationRepository = mock(ReservationRepository::class.java)
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val mockWalletRepository = mock(WalletRepository::class.java)
-    private val sut = CreatePaymentCommandValidator(mockReservationRepository, mockQueueRepository, mockWalletRepository)
+    private val mockPaymentRepository = mock(PaymentRepository::class.java)
+    private val sut =
+        CreatePaymentCommandValidator(mockReservationRepository, mockPaymentRepository, mockQueueRepository, mockWalletRepository)
 
     @Test
     @DisplayName("큐가 존재하지 않으면, QueueNotFoundException을 반환한다")

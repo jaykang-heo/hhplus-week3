@@ -5,10 +5,10 @@ import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.exception.ConcertSeatNotFoundException
 import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
-import com.example.hhplusweek3.domain.model.exception.InvalidReservationException
 import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
+import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.ReservationService
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -22,11 +22,12 @@ class CreateReservationCommandValidatorTest {
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val mockReservationService = mock(ReservationService::class.java)
+    private val mockReservationRepository = mock(ReservationRepository::class.java)
     private val sut =
         CreateReservationCommandValidator(
             mockQueueRepository,
             mockConcertSeatRepository,
-            mockReservationService,
+            mockReservationRepository,
         )
 
     @Test
@@ -76,24 +77,6 @@ class CreateReservationCommandValidatorTest {
 
         // when & then
         assertThrows(ConcertSeatNotFoundException::class.java) {
-            sut.validate(command)
-        }
-    }
-
-    @Test
-    @DisplayName("유효하지 않은 예약이면 InvalidReservationException을 반환한다")
-    fun `when reservation is invalid, then throw InvalidReservationException`() {
-        // given
-        val date = Instant.now().plusSeconds(3600)
-        val command = CreateReservationCommand("token", 1L, date)
-        val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
-
-        `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
-        `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
-        `when`(mockReservationService.isValid(date, 1L, "token")).thenReturn(false)
-
-        // when & then
-        assertThrows(InvalidReservationException::class.java) {
             sut.validate(command)
         }
     }

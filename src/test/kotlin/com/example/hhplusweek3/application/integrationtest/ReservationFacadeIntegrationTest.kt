@@ -5,6 +5,7 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
+import com.example.hhplusweek3.domain.model.exception.AlreadyReservedException
 import com.example.hhplusweek3.domain.model.exception.ConcertSeatNotFoundException
 import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
 import com.example.hhplusweek3.domain.port.QueueRepository
@@ -55,7 +56,7 @@ class ReservationFacadeIntegrationTest(
     fun `when make reservation and there are expired reservations, then expire expired reservations`() {
         val expiredReservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -80,7 +81,7 @@ class ReservationFacadeIntegrationTest(
 
         val newReservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -99,7 +100,7 @@ class ReservationFacadeIntegrationTest(
 
         val reservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -119,7 +120,7 @@ class ReservationFacadeIntegrationTest(
 
         val reservationCommand =
             CreateReservationCommand(
-                token = pendingQueue.token,
+                queueToken = pendingQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -135,7 +136,7 @@ class ReservationFacadeIntegrationTest(
         val nonExistentSeatNumber = 999L
         val reservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = nonExistentSeatNumber,
             )
@@ -150,7 +151,7 @@ class ReservationFacadeIntegrationTest(
     fun `when make reservation and the seat is already reserved, then throw error`() {
         val initialReservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -158,37 +159,14 @@ class ReservationFacadeIntegrationTest(
 
         val duplicateReservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
 
         assertThatThrownBy { sut.reserve(duplicateReservationCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Cannot make reservation")
-    }
-
-    @Test
-    @DisplayName("예약할떄 유저가 이미 예약한 좌석이 있다면 에러를 반환한다")
-    fun `when make reservation and user already has reserved seat, then throw error`() {
-        val initialReservationCommand =
-            CreateReservationCommand(
-                token = activeQueue.token,
-                dateUtc = testDate,
-                seatNumber = testSeatNumber,
-            )
-        sut.reserve(initialReservationCommand)
-
-        val secondReservationCommand =
-            CreateReservationCommand(
-                token = activeQueue.token,
-                dateUtc = testDate,
-                seatNumber = testSeatNumber + 1,
-            )
-
-        assertThatThrownBy { sut.reserve(secondReservationCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Cannot make reservation")
+            .isInstanceOf(AlreadyReservedException::class.java)
+            .hasMessageContaining(AlreadyReservedException(testDate, testSeatNumber).message)
     }
 
     @Test
@@ -196,7 +174,7 @@ class ReservationFacadeIntegrationTest(
     fun `when make reservation and request is valid, then succeed`() {
         val reservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -216,7 +194,7 @@ class ReservationFacadeIntegrationTest(
     fun `when make reservation, the reserved seat expiration time is 5 min`() {
         val reservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
@@ -233,7 +211,7 @@ class ReservationFacadeIntegrationTest(
     fun `when make reservation and initial reservation paymentId is null`() {
         val reservationCommand =
             CreateReservationCommand(
-                token = activeQueue.token,
+                queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )

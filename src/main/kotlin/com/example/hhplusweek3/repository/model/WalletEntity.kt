@@ -1,6 +1,7 @@
 package com.example.hhplusweek3.repository.model
 
 import com.example.hhplusweek3.domain.model.Wallet
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -14,6 +15,7 @@ data class WalletEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
+    @Column(unique = true)
     val queueToken: String,
     var balance: Long,
     val createdTimeUtc: Instant,

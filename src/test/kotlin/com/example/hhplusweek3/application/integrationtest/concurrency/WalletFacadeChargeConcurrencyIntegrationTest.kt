@@ -22,7 +22,6 @@ class WalletFacadeChargeConcurrencyIntegrationTest(
         val expectedAmount = amount * threadCount
         testUtils.resetConcertSeats()
         val queueToken = testUtils.issueAndActivateQueueToken().token
-        walletFacade.charge(ChargeWalletCommand(0, queueToken))
         val initialBalance = walletFacade.get(GetWalletBalanceQuery(queueToken))
         assertThat(initialBalance.balance).isEqualTo(0)
         val commands = List(threadCount) { ChargeWalletCommand(amount, queueToken) }

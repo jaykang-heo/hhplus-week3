@@ -6,10 +6,19 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.Instant
 
 @Entity
-@Table(name = "payments")
+@Table(
+    name = "payments",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_payments_queue_token_reservation_id",
+            columnNames = ["queue_token", "reservation_id"],
+        ),
+    ],
+)
 class PaymentEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,16 +27,15 @@ class PaymentEntity(
     val reservationId: String,
     val queueToken: String,
     val amount: Long,
-    val createdTimeUtc: Instant
+    val createdTimeUtc: Instant,
 ) {
-    fun toModel(): Payment {
-        return Payment(
+    fun toModel(): Payment =
+        Payment(
             paymentId,
             amount,
             reservationId,
-            createdTimeUtc
+            createdTimeUtc,
         )
-    }
 
     constructor(payment: Payment, queueToken: String) : this(
         0,
@@ -35,6 +43,6 @@ class PaymentEntity(
         payment.reservationId,
         queueToken,
         payment.amount,
-        payment.createdTimeUtc
+        payment.createdTimeUtc,
     )
 }

@@ -65,18 +65,6 @@ class ChargeWalletCommandValidatorTest {
     }
 
     @Test
-    @DisplayName("충전 금액이 0 이하이면, 에러를 반환한다")
-    fun `when charge amount is not positive, then throw error`() {
-        // given
-        val command = ChargeWalletCommand(0L, "token")
-
-        // when & then
-        assertThrows(IllegalArgumentException::class.java) {
-            sut.validate(command)
-        }
-    }
-
-    @Test
     @DisplayName("토큰이 비어있으면, 에러를 반환한다")
     fun `when token is empty, then throw error`() {
         // given

@@ -24,6 +24,7 @@ class ConcertFacadeIntegrationTest(
     fun `when find available seats and all concert seats are available, then return all 50 seats`() {
         // given
         testUtils.resetConcertSeats()
+        testUtils.resetReservations()
         val date =
             LocalDate
                 .now()

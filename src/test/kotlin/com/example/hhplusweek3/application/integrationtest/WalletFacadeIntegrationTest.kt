@@ -54,21 +54,6 @@ class WalletFacadeIntegrationTest(
     }
 
     @Test
-    @DisplayName("지갑을 충전할떄 토큰이 존재하지 않는다면, 에러를 반환한다")
-    fun `when charge wallet and queue token does not exist, then throw error`() {
-        val invalidToken = "invalid-token-123"
-        val chargeCommand =
-            ChargeWalletCommand(
-                queueToken = invalidToken,
-                amount = 1000L,
-            )
-
-        assertThatThrownBy { sut.charge(chargeCommand) }
-            .isInstanceOf(QueueNotFoundException::class.java)
-            .hasMessageContaining(QueueNotFoundException(chargeCommand.queueToken).message)
-    }
-
-    @Test
     @DisplayName("지갑을 충전할떄 요청이 정상적이라면, 성공한다")
     fun `when charge wallet and command is valid, then succeed`() {
         val chargeCommand =

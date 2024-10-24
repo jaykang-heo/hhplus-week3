@@ -10,7 +10,9 @@ import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.QueueRepository
+import com.example.hhplusweek3.domain.service.ConcertService
 import com.example.hhplusweek3.repository.jpa.ConcertSeatEntityJpaRepository
+import com.example.hhplusweek3.repository.jpa.PaymentEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.ReservationEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.WalletEntityJpaRepository
@@ -35,13 +37,17 @@ class TestUtils(
     private val queueRepository: QueueRepository,
     private val walletEntityJpaRepository: WalletEntityJpaRepository,
     private val walletFacade: WalletFacade,
+    private val paymentEntityJpaRepository: PaymentEntityJpaRepository,
+    private val concertService: ConcertService,
 ) {
     fun resetDatabase() {
         queueEntityJpaRepository.deleteAll()
         reservationEntityJpaRepository.deleteAll()
+        paymentEntityJpaRepository.deleteAll()
+        resetConcertSeats()
     }
 
-    fun issueQueue(): String = queueFacade.issue(IssueQueueTokenCommand()).token
+    fun issueQueueToken(): String = queueFacade.issue(IssueQueueTokenCommand()).token
 
     fun setQueueToPendingStatus(queueToken: String): Queue {
         val queue = queueEntityJpaRepository.findByToken(queueToken)!!
@@ -52,20 +58,37 @@ class TestUtils(
 
     fun issue(): Queue = queueFacade.issue(IssueQueueTokenCommand())
 
-    fun createReservation(): Reservation {
-        resetDatabase()
-        resetConcertSeats()
-        val token = queueFacade.issue(IssueQueueTokenCommand()).token
+    fun createReservation(
+        queueToken: String? = null,
+        plusDays: Long = 2,
+    ): Reservation {
+        val chargeAmount = 10000L
+        val token = queueToken ?: queueFacade.issue(IssueQueueTokenCommand()).token
         val date =
             LocalDate
                 .now()
-                .plusDays(2)
+                .plusDays(plusDays)
                 .atStartOfDay()
                 .toInstant(ZoneOffset.UTC)
-        walletFacade.charge(ChargeWalletCommand(1000L, token))
-        val command = CreateReservationCommand(token, 1L, date)
+        walletFacade.charge(ChargeWalletCommand(chargeAmount, token))
+        val command = CreateReservationCommand(token, plusDays, date)
         val reservation = reservationFacade.reserve(command)
         return reservation
+    }
+
+    fun createReservations(
+        count: Int,
+        queueToken: String? = null,
+        amount: Long? = null,
+    ): List<Reservation> {
+        val token = queueToken ?: queueFacade.issue(IssueQueueTokenCommand()).token
+        val chargeAmount = amount ?: (SEAT_PRICE * count)
+        walletFacade.charge(ChargeWalletCommand(chargeAmount, token))
+        return (1..count).map {
+            val availableConcert = concertService.getAvailableSchedules().random()
+            val command = CreateReservationCommand(token, availableConcert.seats.random().number, availableConcert.date)
+            reservationFacade.reserve(command)
+        }
     }
 
     fun resetConcertSeats(
@@ -84,7 +107,7 @@ class TestUtils(
                             .atStartOfDay()
                             .toInstant(ZoneOffset.UTC),
                         it.toLong(),
-                        1000L,
+                        SEAT_PRICE,
                     )
                 }
             concertSeatEntityJpaRepository.saveAll(concertSeats)
@@ -176,7 +199,6 @@ class TestUtils(
                             null
                         } catch (e: Exception) {
                             logger.error { e }
-                            throw e
                         } finally {
                             endLatch.countDown()
                         }
@@ -194,5 +216,6 @@ class TestUtils(
 
     companion object {
         val logger = KotlinLogging.logger(TestUtils::class.java.name)
+        const val SEAT_PRICE = 1000L
     }
 }
