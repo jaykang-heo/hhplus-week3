@@ -1,5 +1,6 @@
 package com.example.hhplusweek3.domain.validator
 
+import com.example.hhplusweek3.domain.model.exception.ConcertDateNotFoundException
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.query.FindAvailableConcertSeatsQuery
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -12,29 +13,27 @@ import org.mockito.Mockito.`when`
 import java.time.Instant
 
 class GetAvailableConcertSeatsQueryValidatorTest {
-
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
     private val sut = GetAvailableConcertSeatsQueryValidator(mockConcertSeatRepository)
 
     @Test
-    @DisplayName("콘서트 좌석이 해당 날짜에 존재하지 않는다면, 실패한다")
-    fun `when given concert date does not exist, then throw error`() {
+    @DisplayName("콘서트 좌석이 해당 날짜에 존재하지 않으면 ConcertDateNotFoundException을 반환한다")
+    fun `when concert date does not exist, then throw ConcertDateNotFoundException`() {
         // given
         val dateUtc = Instant.now().plusSeconds(60)
         val query = FindAvailableConcertSeatsQuery(dateUtc)
         `when`(mockConcertSeatRepository.existsByDate(dateUtc)).thenReturn(false)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
+        assertThrows(ConcertDateNotFoundException::class.java) {
             sut.validate(query)
         }
-        assert(exception.message!!.contains("does not exist"))
         verify(mockConcertSeatRepository).existsByDate(dateUtc)
     }
 
     @Test
-    @DisplayName("콘서트 좌석이 존재한다면, 성공한다")
-    fun `when given concert date exists, then pass`() {
+    @DisplayName("콘서트 좌석이 존재하면 검증을 통과한다")
+    fun `when concert date exists, then validation passes`() {
         // given
         val dateUtc = Instant.now().plusSeconds(60)
         val query = FindAvailableConcertSeatsQuery(dateUtc)

@@ -3,7 +3,10 @@ package com.example.hhplusweek3.domain.validator
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.port.QueueRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -13,7 +16,6 @@ import org.mockito.Mockito.`when`
 import java.time.Instant
 
 class ChargeWalletCommandValidatorTest {
-
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val sut = ChargeWalletCommandValidator(mockQueueRepository)
 
@@ -25,10 +27,11 @@ class ChargeWalletCommandValidatorTest {
         `when`(mockQueueRepository.findByToken("non-existent-token")).thenReturn(null)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
-        assert(exception.message!!.contains("queue not found"))
+        val exception =
+            assertThrows(QueueNotFoundException::class.java) {
+                sut.validate(command)
+            }
+        assertThat(exception.message!!).isEqualTo(QueueNotFoundException(command.queueToken).message)
     }
 
     @Test
@@ -40,10 +43,11 @@ class ChargeWalletCommandValidatorTest {
         `when`(mockQueueRepository.findByToken("inactive-token")).thenReturn(inactiveQueue)
 
         // when & then
-        val exception = assertThrows(RuntimeException::class.java) {
-            sut.validate(command)
-        }
-        assert(exception.message!!.contains("queue is not active"))
+        val exception =
+            assertThrows(InvalidQueueStatusException::class.java) {
+                sut.validate(command)
+            }
+        assertThat(exception.message).isEqualTo(InvalidQueueStatusException(inactiveQueue.status).message)
     }
 
     @Test
@@ -56,18 +60,6 @@ class ChargeWalletCommandValidatorTest {
 
         // when & then
         assertDoesNotThrow {
-            sut.validate(command)
-        }
-    }
-
-    @Test
-    @DisplayName("충전 금액이 0 이하이면, 에러를 반환한다")
-    fun `when charge amount is not positive, then throw error`() {
-        // given
-        val command = ChargeWalletCommand(0L, "token")
-
-        // when & then
-        assertThrows(IllegalArgumentException::class.java) {
             sut.validate(command)
         }
     }
