@@ -1,6 +1,7 @@
 package com.example.hhplusweek3.application.integrationtest
 
 import com.example.hhplusweek3.application.ConcertFacade
+import com.example.hhplusweek3.domain.model.exception.ConcertDateNotFoundException
 import com.example.hhplusweek3.domain.query.FindAvailableConcertSeatsQuery
 import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
@@ -23,6 +24,7 @@ class ConcertFacadeIntegrationTest(
     fun `when find available seats and all concert seats are available, then return all 50 seats`() {
         // given
         testUtils.resetConcertSeats()
+        testUtils.resetReservations()
         val date =
             LocalDate
                 .now()
@@ -111,8 +113,8 @@ class ConcertFacadeIntegrationTest(
         val query = FindAvailableConcertSeatsQuery(date)
 
         // when, then
-        val actual = assertThrows<RuntimeException> { sut.findAvailableSeats(query) }
-        assertThat(actual.message?.contains("does not exist")).isTrue()
+        val actual = assertThrows<ConcertDateNotFoundException> { sut.findAvailableSeats(query) }
+        assertThat(actual.message?.contains("No concert exists")).isTrue()
     }
 
     @Test

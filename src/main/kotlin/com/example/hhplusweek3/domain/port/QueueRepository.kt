@@ -20,5 +20,5 @@ interface QueueRepository {
 
     fun findAllActive(): List<Queue>
 
-    fun changeStatusToActive(token: String)
+    fun changeStatusToActive(token: String): Queue
 }

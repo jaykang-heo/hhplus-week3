@@ -3,9 +3,11 @@ package com.example.hhplusweek3.application.unittest
 import com.example.hhplusweek3.application.QueueFacade
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.model.Queue
+import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.query.GetQueueQuery
 import com.example.hhplusweek3.domain.service.QueueService
+import com.example.hhplusweek3.domain.service.WalletService
 import com.example.hhplusweek3.domain.validator.GetQueueQueryValidator
 import com.example.hhplusweek3.domain.validator.IssueQueueTokenCommandValidator
 import org.assertj.core.api.Assertions.assertThat
@@ -20,13 +22,14 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import java.time.Instant
 
 class QueueFacadeTest {
-
     private lateinit var mockIssueQueueTokenCommandValidator: IssueQueueTokenCommandValidator
     private lateinit var mockQueueRepository: QueueRepository
     private lateinit var mockQueueService: QueueService
     private lateinit var mockGetQueueQueryValidator: GetQueueQueryValidator
+    private val mockWalletService = mock(WalletService::class.java)
     private lateinit var sut: QueueFacade
 
     @BeforeEach
@@ -35,34 +38,58 @@ class QueueFacadeTest {
         mockQueueRepository = mock(QueueRepository::class.java)
         mockQueueService = mock(QueueService::class.java)
         mockGetQueueQueryValidator = mock(GetQueueQueryValidator::class.java)
-        sut = QueueFacade(
-            queueService = mockQueueService,
-            queueRepository = mockQueueRepository,
-            getQueueQueryValidator = mockGetQueueQueryValidator
-        )
+        sut =
+            QueueFacade(
+                queueService = mockQueueService,
+                walletService = mockWalletService,
+                queueRepository = mockQueueRepository,
+                getQueueQueryValidator = mockGetQueueQueryValidator,
+            )
     }
 
     @Test
-    @DisplayName("대기열 토큰 발급 명령을 내리면, 대기열을 반환한다")
-    fun `when issue queue token command, then return queue`() {
+    @DisplayName("대기열 토큰 발급 명령을 내리면, 대기열을 생성하고 활성화된 대기열의 지갑을 생성한다")
+    fun `when issue queue token command, then create queue and create wallets for activated queues`() {
         // given
         val command = IssueQueueTokenCommand()
+        val now = Instant.now()
         val generatedQueue = Queue(command)
-        val savedQueue = generatedQueue.copy()
+
+        // Create activated queues with different tokens
+        val activatedQueues =
+            listOf(
+                Queue(
+                    token = "token1",
+                    status = QueueStatus.ACTIVE,
+                    expirationTimeUtc = now.plusSeconds(60),
+                    createdTimeUtc = now,
+                    updatedTimeUtc = now,
+                ),
+                Queue(
+                    token = "token2",
+                    status = QueueStatus.ACTIVE,
+                    expirationTimeUtc = now.plusSeconds(60),
+                    createdTimeUtc = now,
+                    updatedTimeUtc = now,
+                ),
+            )
+
         `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
-        doNothing().`when`(mockIssueQueueTokenCommandValidator).validate(command)
+        `when`(mockQueueService.activatePendingQueues()).thenReturn(activatedQueues)
         `when`(mockQueueRepository.save(generatedQueue)).thenReturn(generatedQueue)
-        doNothing().`when`(mockQueueService).activatePendingQueues()
-        `when`(mockQueueRepository.getByToken(generatedQueue.token)).thenReturn(savedQueue)
+        `when`(mockQueueRepository.getByToken(generatedQueue.token)).thenReturn(generatedQueue)
 
         // when
         val actual = sut.issue(command)
 
         // then
-        assertThat(actual).isEqualTo(savedQueue)
+        assertThat(actual).isEqualTo(generatedQueue)
+        assertThat(actual.status).isEqualTo(QueueStatus.PENDING)
+        assertThat(actual.expirationTimeUtc).isAfter(now)
         verify(mockQueueService).generateQueue(command)
         verify(mockQueueRepository).save(generatedQueue)
         verify(mockQueueService).activatePendingQueues()
+        verify(mockWalletService).createEmpty(activatedQueues)
         verify(mockQueueRepository).getByToken(generatedQueue.token)
     }
 
@@ -92,7 +119,8 @@ class QueueFacadeTest {
         // given
         val query = GetQueueQuery("token123")
         doThrow(IllegalArgumentException("Policy validation failed"))
-            .`when`(mockGetQueueQueryValidator).validate(query)
+            .`when`(mockGetQueueQueryValidator)
+            .validate(query)
 
         // when & then
         assertThatThrownBy { sut.get(query) }

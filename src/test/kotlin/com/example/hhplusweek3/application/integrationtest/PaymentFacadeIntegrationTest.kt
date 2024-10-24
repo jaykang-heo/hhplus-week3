@@ -2,6 +2,7 @@ package com.example.hhplusweek3.application.integrationtest
 
 import com.example.hhplusweek3.application.PaymentFacade
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
+import com.example.hhplusweek3.domain.model.exception.ReservationNotFoundException
 import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -20,18 +21,19 @@ class PaymentFacadeIntegrationTest(
     @DisplayName("결제를 할때 예약 번호가 존재하지 않는다면, 에러를 반환한다")
     fun `when create payment and reservation id does not exist, then throw error`() {
         // given
-        val queueToken = testUtils.issueQueue()
+        val queueToken = testUtils.issueQueueToken()
         val command = CreatePaymentCommand(queueToken, UUID.randomUUID().toString())
 
         // when, then
-        val actual = assertThrows<RuntimeException> { sut.createPayment(command) }
-        assertThat(actual.message).contains("reservation token not found by")
+        val actual = assertThrows<ReservationNotFoundException> { sut.createPayment(command) }
+        assertThat(actual.message).contains("Reservation not found with token")
     }
 
     @Test
     @DisplayName("결제를 할때 결제 요청이 정상이라면, 성공한다")
     fun `when create payment and request is valid, then succeed`() {
         // given
+        testUtils.resetDatabase()
         val reservation = testUtils.createReservation()
         val command = CreatePaymentCommand(reservation.queueToken, reservation.id)
 

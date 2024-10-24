@@ -1,5 +1,6 @@
-package com.example.hhplusweek3.application
+package com.example.hhplusweek3.application.unittest
 
+import com.example.hhplusweek3.application.WalletFacade
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Wallet
 import com.example.hhplusweek3.domain.port.WalletRepository
@@ -11,11 +12,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.doThrow
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 
 class WalletFacadeTest {
     private val mockWalletRepository = mock(WalletRepository::class.java)
@@ -31,42 +36,56 @@ class WalletFacadeTest {
         )
 
     @Test
-    @DisplayName("충전 명령 검증이 실패하면, 실행을 중단한다")
-    fun `when command validation fails, then stop`() {
+    @DisplayName("충전 시 락을 획득하고 검증 후 충전을 수행한다")
+    fun `when charging wallet, acquire lock, validate and perform charge`() {
+        // given
+        val command = ChargeWalletCommand(100L, "token")
+        val expectedWallet = Wallet(100L, "token")
+
+        `when`(mockWalletRepository.getByQueueToken("token")).thenReturn(expectedWallet)
+
+        // Capture the lambda passed to executeWithLock
+        doAnswer { invocation ->
+            val lockCallback = invocation.getArgument<() -> Unit>(1)
+            lockCallback.invoke()
+            null
+        }.`when`(mockWalletService).executeWithLock(eq("token"), any())
+
+        // when
+        val result = sut.charge(command)
+
+        // then
+        verify(mockWalletService).executeWithLock(eq("token"), any())
+        verify(mockChargeWalletCommandValidator).validate(command)
+        verify(mockWalletService).add(100L, "token")
+        verify(mockWalletRepository).getByQueueToken("token")
+        assertEquals(expectedWallet, result)
+    }
+
+    @Test
+    @DisplayName("충전 명령 검증이 실패하면, 락 내에서 예외가 발생한다")
+    fun `when command validation fails within lock, then throw exception`() {
         // given
         val command = ChargeWalletCommand(100L, "token")
         doThrow(IllegalArgumentException("Invalid command"))
             .`when`(mockChargeWalletCommandValidator)
             .validate(command)
 
+        doAnswer { invocation ->
+            val lockCallback = invocation.getArgument<() -> Unit>(1)
+            lockCallback.invoke()
+            null
+        }.`when`(mockWalletService).executeWithLock(eq("token"), any())
+
         // when & then
         assertThrows(IllegalArgumentException::class.java) {
             sut.charge(command)
         }
 
+        verify(mockWalletService).executeWithLock(eq("token"), any())
         verify(mockChargeWalletCommandValidator).validate(command)
-        verifyNoInteractions(mockWalletService)
+        verifyNoMoreInteractions(mockWalletService)
         verifyNoInteractions(mockWalletRepository)
-    }
-
-    @Test
-    @DisplayName("충전이 성공하면, 충전된 지갑을 반환한다")
-    fun `when charge succeeds, then return charged wallet`() {
-        // given
-        val command = ChargeWalletCommand(100L, "token")
-        val walletFromService = Wallet(100L, "token")
-        val savedWallet = Wallet(100L, "token")
-
-        `when`(mockWalletRepository.getByQueueToken(walletFromService.queueToken)).thenReturn(savedWallet)
-
-        // when
-        val result = sut.charge(command)
-
-        // then
-        assertEquals(savedWallet, result)
-        verify(mockChargeWalletCommandValidator).validate(command)
-        verify(mockWalletService).add(100L, "token")
-        verify(mockWalletRepository).getByQueueToken(walletFromService.queueToken)
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.example.hhplusweek3.domain.service.unittest
 
 import com.example.hhplusweek3.domain.model.Reservation
+import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.ReservationService
 import org.junit.jupiter.api.DisplayName
@@ -12,9 +13,9 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import java.time.Instant
 
 class ReservationServiceTest {
-
     private val mockReservationRepository = mock(ReservationRepository::class.java)
-    private val sut = ReservationService(mockReservationRepository)
+    private val concertSeatRepository = mock(ConcertSeatRepository::class.java)
+    private val sut = ReservationService(mockReservationRepository, concertSeatRepository)
 
     @Test
     @DisplayName("예약이 존재하지 않으면, 아무 작업도 하지 않는다")
@@ -41,17 +42,18 @@ class ReservationServiceTest {
         val now = Instant.now()
         val date = now
         val seatNumber = 1L
-        val reservation = Reservation(
-            id = "reservation-id-1",
-            paymentId = null,
-            queueToken = "queue-token",
-            dateTimeUtc = date,
-            reservedSeat = seatNumber,
-            amount = 100L,
-            createdTimeUtc = now.minusSeconds(3600),
-            updatedTimeUtc = now.minusSeconds(1800),
-            expirationTimeUtc = now.plusSeconds(3600) // Expires in 1 hour
-        )
+        val reservation =
+            Reservation(
+                id = "reservation-id-1",
+                paymentId = null,
+                queueToken = "queue-token",
+                dateTimeUtc = date,
+                reservedSeat = seatNumber,
+                amount = 100L,
+                createdTimeUtc = now.minusSeconds(3600),
+                updatedTimeUtc = now.minusSeconds(1800),
+                expirationTimeUtc = now.plusSeconds(3600), // Expires in 1 hour
+            )
 
         `when`(mockReservationRepository.findBySeatNumberAndDate(seatNumber, date))
             .thenReturn(reservation)
@@ -71,17 +73,18 @@ class ReservationServiceTest {
         val now = Instant.now()
         val date = now
         val seatNumber = 1L
-        val reservation = Reservation(
-            id = "reservation-id-2",
-            paymentId = null,
-            queueToken = "queue-token",
-            dateTimeUtc = date,
-            reservedSeat = seatNumber,
-            amount = 100L,
-            createdTimeUtc = now.minusSeconds(7200),
-            updatedTimeUtc = now.minusSeconds(3600),
-            expirationTimeUtc = now.minusSeconds(1800) // Expired 30 minutes ago
-        )
+        val reservation =
+            Reservation(
+                id = "reservation-id-2",
+                paymentId = null,
+                queueToken = "queue-token",
+                dateTimeUtc = date,
+                reservedSeat = seatNumber,
+                amount = 100L,
+                createdTimeUtc = now.minusSeconds(7200),
+                updatedTimeUtc = now.minusSeconds(3600),
+                expirationTimeUtc = now.minusSeconds(1800), // Expired 30 minutes ago
+            )
 
         `when`(mockReservationRepository.findBySeatNumberAndDate(seatNumber, date))
             .thenReturn(reservation)

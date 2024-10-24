@@ -13,17 +13,17 @@ data class Reservation(
     val amount: Long,
     val createdTimeUtc: Instant,
     val updatedTimeUtc: Instant,
-    val expirationTimeUtc: Instant
+    val expirationTimeUtc: Instant,
 ) {
     constructor(command: CreateReservationCommand, amount: Long) : this(
         UUID.randomUUID().toString(),
         null,
-        command.token,
+        command.queueToken,
         command.dateUtc,
         command.seatNumber,
         amount,
         Instant.now(),
         Instant.now(),
-        Instant.now().plusSeconds(60 * 5)
+        Instant.now().plusSeconds(60 * 5),
     )
 }
