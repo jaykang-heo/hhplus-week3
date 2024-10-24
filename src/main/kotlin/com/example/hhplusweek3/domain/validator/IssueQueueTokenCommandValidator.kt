@@ -1,6 +1,7 @@
 package com.example.hhplusweek3.domain.validator
 
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
+import com.example.hhplusweek3.domain.model.exception.QueueLimitExceededException
 import com.example.hhplusweek3.domain.port.QueueLimitRepository
 import org.springframework.stereotype.Component
 
@@ -11,7 +12,7 @@ class IssueQueueTokenCommandValidator(
     fun validate(command: IssueQueueTokenCommand) {
         val queueLimit = queueLimitRepository.getQueueLimit()
         if (queueLimit.issueCount >= queueLimit.issueLimitCount) {
-            throw IllegalArgumentException("queue issued count ${queueLimit.issueCount} exceeded the limit ${queueLimit.issueLimitCount}")
+            throw QueueLimitExceededException(queueLimit.issueCount, queueLimit.issueLimitCount)
         }
     }
 }

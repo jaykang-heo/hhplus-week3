@@ -3,6 +3,7 @@ package com.example.hhplusweek3.application.integrationtest
 import com.example.hhplusweek3.application.QueueFacade
 import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.query.GetQueueQuery
 import com.example.hhplusweek3.domain.service.QueueService
 import com.example.hhplusweek3.testservice.TestUtils
@@ -99,8 +100,8 @@ class QueueFacadeIntegrationTest(
 
         // when & then
         assertThatThrownBy { sut.get(query) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue not found by $invalidToken")
+            .isInstanceOf(QueueNotFoundException::class.java)
+            .hasMessageContaining("Queue not found with token: $invalidToken")
     }
 
     @Test

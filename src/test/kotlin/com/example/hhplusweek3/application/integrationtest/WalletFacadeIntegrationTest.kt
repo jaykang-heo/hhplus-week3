@@ -4,6 +4,8 @@ import com.example.hhplusweek3.application.WalletFacade
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
@@ -47,23 +49,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.charge(chargeCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue is not active")
-    }
-
-    @Test
-    @DisplayName("지갑을 충전할떄 토큰이 존재하지 않는다면, 에러를 반환한다")
-    fun `when charge wallet and queue token does not exist, then throw error`() {
-        val invalidToken = "invalid-token-123"
-        val chargeCommand =
-            ChargeWalletCommand(
-                queueToken = invalidToken,
-                amount = 1000L,
-            )
-
-        assertThatThrownBy { sut.charge(chargeCommand) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("queue not found by $invalidToken")
+            .isInstanceOf(InvalidQueueStatusException::class.java)
+            .hasMessageContaining(InvalidQueueStatusException(nonActiveQueue.status).message)
     }
 
     @Test
@@ -139,8 +126,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.get(getQuery) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Queue status is not active")
+            .isInstanceOf(InvalidQueueStatusException::class.java)
+            .hasMessageContaining(InvalidQueueStatusException(nonActiveQueue.status).message)
     }
 
     @Test
@@ -153,8 +140,8 @@ class WalletFacadeIntegrationTest(
             )
 
         assertThatThrownBy { sut.get(getQuery) }
-            .isInstanceOf(RuntimeException::class.java)
-            .hasMessageContaining("Queue not found by $invalidToken")
+            .isInstanceOf(QueueNotFoundException::class.java)
+            .hasMessageContaining(QueueNotFoundException(getQuery.queueToken).message)
     }
 
     @Test

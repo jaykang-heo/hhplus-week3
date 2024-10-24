@@ -6,6 +6,12 @@ import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.model.Wallet
+import com.example.hhplusweek3.domain.model.exception.InsufficientBalanceException
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
+import com.example.hhplusweek3.domain.model.exception.ReservationNotFoundException
+import com.example.hhplusweek3.domain.model.exception.WalletNotFoundException
+import com.example.hhplusweek3.domain.port.PaymentRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
@@ -21,42 +27,40 @@ class CreatePaymentCommandValidatorTest {
     private val mockReservationRepository = mock(ReservationRepository::class.java)
     private val mockQueueRepository = mock(QueueRepository::class.java)
     private val mockWalletRepository = mock(WalletRepository::class.java)
-    private val sut = CreatePaymentCommandValidator(mockReservationRepository, mockQueueRepository, mockWalletRepository)
+    private val mockPaymentRepository = mock(PaymentRepository::class.java)
+    private val sut =
+        CreatePaymentCommandValidator(mockReservationRepository, mockPaymentRepository, mockQueueRepository, mockWalletRepository)
 
     @Test
-    @DisplayName("큐가 존재하지 않으면, 에러를 반환한다")
-    fun `when queue does not exist, then throw error`() {
+    @DisplayName("큐가 존재하지 않으면, QueueNotFoundException을 반환한다")
+    fun `when queue does not exist, then throw QueueNotFoundException`() {
         // given
         val command = CreatePaymentCommand("non-existent-token", "reservationId")
         `when`(mockQueueRepository.findByToken("non-existent-token")).thenReturn(null)
 
         // when & then
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                sut.validate(command)
-            }
-        assert(exception.message!!.contains("queue token not found"))
+        assertThrows(QueueNotFoundException::class.java) {
+            sut.validate(command)
+        }
     }
 
     @Test
-    @DisplayName("큐가 활성 상태가 아니면, 에러를 반환한다")
-    fun `when queue is not active, then throw error`() {
+    @DisplayName("큐가 활성 상태가 아니면, InvalidQueueStatusException을 반환한다")
+    fun `when queue is not active, then throw InvalidQueueStatusException`() {
         // given
         val command = CreatePaymentCommand("inactive-token", "reservationId")
         val inactiveQueue = Queue("inactive-token", QueueStatus.PENDING, Instant.now(), Instant.now(), Instant.now())
         `when`(mockQueueRepository.findByToken("inactive-token")).thenReturn(inactiveQueue)
 
         // when & then
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                sut.validate(command)
-            }
-        assert(exception.message!!.contains("queue is not active"))
+        assertThrows(InvalidQueueStatusException::class.java) {
+            sut.validate(command)
+        }
     }
 
     @Test
-    @DisplayName("예약이 존재하지 않으면, 에러를 반환한다")
-    fun `when reservation does not exist, then throw error`() {
+    @DisplayName("예약이 존재하지 않으면, ReservationNotFoundException을 반환한다")
+    fun `when reservation does not exist, then throw ReservationNotFoundException`() {
         // given
         val command = CreatePaymentCommand("active-token", "non-existent-reservation")
         val activeQueue = Queue("active-token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
@@ -64,16 +68,14 @@ class CreatePaymentCommandValidatorTest {
         `when`(mockReservationRepository.findByTokenAndReservationId("active-token", "non-existent-reservation")).thenReturn(null)
 
         // when & then
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                sut.validate(command)
-            }
-        assert(exception.message!!.contains("reservation token not found"))
+        assertThrows(ReservationNotFoundException::class.java) {
+            sut.validate(command)
+        }
     }
 
     @Test
-    @DisplayName("지갑이 존재하지 않으면, 에러를 반환한다")
-    fun `when wallet does not exist, then throw error`() {
+    @DisplayName("지갑이 존재하지 않으면, WalletNotFoundException을 반환한다")
+    fun `when wallet does not exist, then throw WalletNotFoundException`() {
         // given
         val command = CreatePaymentCommand("active-token", "valid-reservation")
         val activeQueue = Queue("active-token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
@@ -84,16 +86,14 @@ class CreatePaymentCommandValidatorTest {
         `when`(mockWalletRepository.findByQueueToken("active-token")).thenReturn(null)
 
         // when & then
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                sut.validate(command)
-            }
-        assert(exception.message!!.contains("wallet token not found"))
+        assertThrows(WalletNotFoundException::class.java) {
+            sut.validate(command)
+        }
     }
 
     @Test
-    @DisplayName("지갑 잔액이 예약 금액보다 작으면, 에러를 반환한다")
-    fun `when wallet balance is less than reservation amount, then throw error`() {
+    @DisplayName("지갑 잔액이 예약 금액보다 작으면, InsufficientBalanceException을 반환한다")
+    fun `when wallet balance is less than reservation amount, then throw InsufficientBalanceException`() {
         // given
         val command = CreatePaymentCommand("active-token", "valid-reservation")
         val activeQueue = Queue("active-token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
@@ -105,11 +105,9 @@ class CreatePaymentCommandValidatorTest {
         `when`(mockWalletRepository.findByQueueToken("active-token")).thenReturn(insufficientWallet)
 
         // when & then
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                sut.validate(command)
-            }
-        assert(exception.message!!.contains("cannot be less than"))
+        assertThrows(InsufficientBalanceException::class.java) {
+            sut.validate(command)
+        }
     }
 
     @Test

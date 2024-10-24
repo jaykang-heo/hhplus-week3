@@ -2,6 +2,8 @@ package com.example.hhplusweek3.domain.validator
 
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.QueueStatus
+import com.example.hhplusweek3.domain.model.exception.InvalidQueueStatusException
+import com.example.hhplusweek3.domain.model.exception.QueueNotFoundException
 import com.example.hhplusweek3.domain.port.QueueRepository
 import org.springframework.stereotype.Component
 
@@ -14,10 +16,10 @@ class ChargeWalletCommandValidator(
 
         val queue =
             queueRepository.findByToken(command.queueToken)
-                ?: throw RuntimeException("queue not found by ${command.queueToken}")
+                ?: throw QueueNotFoundException(command.queueToken)
 
         if (queue.status != QueueStatus.ACTIVE) {
-            throw RuntimeException("queue is not active. queue status is ${queue.status}")
+            throw InvalidQueueStatusException(queue.status)
         }
     }
 }

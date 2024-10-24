@@ -4,16 +4,15 @@ import com.example.hhplusweek3.api.request.ChargeWalletBalanceRequest
 
 data class ChargeWalletCommand(
     val amount: Long,
-    val queueToken: String
+    val queueToken: String,
 ) {
-
     fun validate() {
-        require(amount > 0) { "Amount must be positive" }
+        require(amount >= 0) { "Amount must be equal to or greater than 0" }
         require(queueToken.isNotEmpty()) { "Token must not be empty" }
     }
 
     constructor(request: ChargeWalletBalanceRequest, token: String) : this(
         request.amount,
-        token
+        token,
     )
 }
