@@ -1,5 +1,6 @@
 package com.example.hhplusweek3.domain.service
 
+import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.Wallet
 import com.example.hhplusweek3.domain.port.WalletRepository
 import org.springframework.stereotype.Component
@@ -26,5 +27,19 @@ class WalletService(
         val wallet = walletRepository.getByQueueToken(queueToken)
         wallet.balance -= amount
         walletRepository.save(wallet)
+    }
+
+    fun executeWithLock(
+        queueToken: String,
+        action: () -> Unit,
+    ) {
+        walletRepository.getOrCreateByQueueTokenWithLockOrThrow(queueToken)
+        action.invoke()
+    }
+
+    fun createEmpty(queues: List<Queue>) {
+        queues.forEach {
+            add(0, it.token)
+        }
     }
 }
