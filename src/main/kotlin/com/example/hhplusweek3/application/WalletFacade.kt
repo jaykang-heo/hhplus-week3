@@ -8,7 +8,6 @@ import com.example.hhplusweek3.domain.service.WalletService
 import com.example.hhplusweek3.domain.validator.ChargeWalletCommandValidator
 import com.example.hhplusweek3.domain.validator.GetWalletBalanceQueryValidator
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class WalletFacade(
@@ -17,12 +16,9 @@ class WalletFacade(
     private val getWalletBalanceQueryValidator: GetWalletBalanceQueryValidator,
     private val walletRepository: WalletRepository,
 ) {
-    @Transactional
     fun charge(command: ChargeWalletCommand): Wallet {
-        walletService.executeWithLock(command.queueToken) {
-            chargeWalletCommandValidator.validate(command)
-            walletService.add(command.amount, command.queueToken)
-        }
+        chargeWalletCommandValidator.validate(command)
+        walletService.add(command.amount, command.queueToken)
         return walletRepository.getByQueueToken(command.queueToken)
     }
 

@@ -10,17 +10,17 @@ import org.springframework.stereotype.Service
 
 @Service
 class ReservationFacade(
-    private val reservationService: ReservationService,
-    private val createReservationCommandValidator: CreateReservationCommandValidator,
     private val reservationRepository: ReservationRepository,
     private val concertSeatRepository: ConcertSeatRepository,
+    private val reservationService: ReservationService,
+    private val createReservationCommandValidator: CreateReservationCommandValidator
 ) {
-    fun reserve(command: CreateReservationCommand): Reservation =
-        reservationService.reserveWithLock(command) {
-            reservationService.deleteIfExpired(command.dateUtc, command.seatNumber)
-            createReservationCommandValidator.validate(command)
-            val concertSeatAmount = concertSeatRepository.getByDateAndSeatNumber(command.dateUtc, command.seatNumber).amount
-            val reservation = Reservation(command, concertSeatAmount)
-            reservationRepository.save(reservation)
-        }
+
+    fun reserve(command: CreateReservationCommand): Reservation {
+        reservationService.deleteIfExpired(command.dateUtc, command.seatNumber)
+        createReservationCommandValidator.validate(command)
+        val concertSeatAmount = concertSeatRepository.getByDateAndSeatNumber(command.dateUtc, command.seatNumber).amount
+        val reservation = Reservation(command, concertSeatAmount)
+        return reservationRepository.save(reservation)
+    }
 }

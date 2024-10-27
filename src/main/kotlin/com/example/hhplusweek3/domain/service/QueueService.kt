@@ -27,7 +27,7 @@ class QueueService(
         queueRepository.changeStatusToExpire(tokens)
     }
 
-    fun activatePendingQueues(): List<Queue> {
+    fun activatePendingQueues() {
         val pendingQueues =
             queueRepository
                 .findAllPending()
@@ -35,9 +35,9 @@ class QueueService(
         val activeQueueCount = queueRepository.findAllActive().size
         val availableSlots = abs(ACTIVE_LIMIT - activeQueueCount)
 
-        return pendingQueues
+        pendingQueues
             .take(availableSlots)
-            .map { queue ->
+            .forEach { queue ->
                 queueRepository.changeStatusToActive(queue.token)
             }
     }
