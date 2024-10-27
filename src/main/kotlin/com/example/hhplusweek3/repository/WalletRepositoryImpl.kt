@@ -1,7 +1,6 @@
 package com.example.hhplusweek3.repository
 
 import com.example.hhplusweek3.domain.model.Wallet
-import com.example.hhplusweek3.domain.model.exception.WalletNotFoundException
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.repository.jpa.WalletEntityJpaRepository
 import com.example.hhplusweek3.repository.model.WalletEntity
@@ -22,12 +21,4 @@ class WalletRepositoryImpl(
     override fun getByQueueToken(queueToken: String): Wallet = walletEntityJpaRepository.findByQueueToken(queueToken)!!.toModel()
 
     override fun findByQueueToken(queueToken: String): Wallet? = walletEntityJpaRepository.findByQueueToken(queueToken)?.toModel()
-
-    override fun getOrCreateByQueueTokenWithPessimisticLockOrThrow(queueToken: String): Wallet =
-        walletEntityJpaRepository.findByQueueTokenWithPessimisticLock(queueToken)?.toModel()
-            ?: throw WalletNotFoundException(queueToken)
-
-    override fun getOrCreateByQueueTokenWithOptimisticLockOrThrow(queueToken: String): Wallet =
-        walletEntityJpaRepository.findByQueueTokenWithOptimisticLock(queueToken)?.toModel()
-            ?: throw WalletNotFoundException(queueToken)
 }

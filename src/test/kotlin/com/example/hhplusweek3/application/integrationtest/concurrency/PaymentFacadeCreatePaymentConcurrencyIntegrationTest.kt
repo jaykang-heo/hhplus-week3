@@ -1,6 +1,7 @@
 package com.example.hhplusweek3.application.integrationtest.concurrency
 
 import com.example.hhplusweek3.application.PaymentFacade
+import com.example.hhplusweek3.config.IntegrationTest
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.repository.jpa.PaymentEntityJpaRepository
@@ -8,9 +9,8 @@ import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 
-@SpringBootTest
+@IntegrationTest
 class PaymentFacadeCreatePaymentConcurrencyIntegrationTest(
     @Autowired private val paymentFacade: PaymentFacade,
     @Autowired private val paymentEntityJpaRepository: PaymentEntityJpaRepository,

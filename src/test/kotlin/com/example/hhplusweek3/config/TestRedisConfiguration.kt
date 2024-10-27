@@ -12,25 +12,23 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.utility.DockerImageName
+// import org.testcontainers.containers.GenericContainer
+// import org.testcontainers.utility.DockerImageName
 
 @TestConfiguration
 class TestRedisConfiguration {
     companion object {
-        private val redis =
-            GenericContainer(DockerImageName.parse("redis:7.2"))
-                .withExposedPorts(6379)
-                .apply { start() }
+//        private val redis =
+//            GenericContainer(DockerImageName.parse("redis:7.2"))
+//                .withExposedPorts(6379)
+//                .apply { start() }
 
-        @JvmStatic
-        @DynamicPropertySource
-        fun properties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.data.redis.host") { redis.host }
-            registry.add("spring.data.redis.port") { redis.getMappedPort(6379) }
-        }
+//        @JvmStatic
+//        @DynamicPropertySource
+//        fun properties(registry: DynamicPropertyRegistry) {
+//            registry.add("spring.data.redis.host") { redis.host }
+//            registry.add("spring.data.redis.port") { redis.getMappedPort(6379) }
+//        }
     }
 
     private var redissonClient: RedissonClient? = null
@@ -39,8 +37,8 @@ class TestRedisConfiguration {
     fun redisConnectionFactory(): LettuceConnectionFactory {
         val configuration =
             RedisStandaloneConfiguration().apply {
-                hostName = redis.host
-                port = redis.getMappedPort(6379)
+                hostName = "localhost"
+                port = 6379
             }
         return LettuceConnectionFactory(configuration)
     }
@@ -62,7 +60,7 @@ class TestRedisConfiguration {
         val config =
             Config().apply {
                 useSingleServer()
-                    .setAddress("redis://${redis.host}:${redis.getMappedPort(6379)}")
+                    .setAddress("redis://localhost:6379")
                     .setTimeout(5000)
                     .setConnectionMinimumIdleSize(1)
             }

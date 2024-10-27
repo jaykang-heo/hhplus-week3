@@ -1,13 +1,22 @@
 package com.example.hhplusweek3.domain.port
 
+import java.time.Instant
+
 interface LockRepository {
-    fun <T> spinLock(
-        key: String,
+    fun <T> acquirePaymentLock(
+        queueToken: String,
+        reservationId: String,
         action: () -> T,
     ): T?
 
-    fun <T> redLock(
-        key: String,
+    fun <T> acquireWalletLock(
+        queueToken: String,
+        action: () -> T,
+    ): T?
+
+    fun <T> acquireReservationLock(
+        dateUtc: Instant,
+        seatNumber: Long,
         action: () -> T,
     ): T?
 }

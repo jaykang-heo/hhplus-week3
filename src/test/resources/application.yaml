@@ -1,3 +1,2 @@
-#logging:
-#  level:
-#    root: trace
+spring.redis.host=127.0.0.1
+spring.redis.port=6379
