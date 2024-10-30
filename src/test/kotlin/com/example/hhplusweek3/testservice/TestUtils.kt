@@ -198,7 +198,7 @@ class TestUtils(
                             action(command)
                             null
                         } catch (e: Exception) {
-                            logger.error { e }
+//                            logger.error { e }
                         } finally {
                             endLatch.countDown()
                         }
