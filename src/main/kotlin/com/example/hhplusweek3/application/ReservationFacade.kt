@@ -18,7 +18,7 @@ class ReservationFacade(
     private val redisRepository: RedisRepository,
 ) {
     fun reserve(command: CreateReservationCommand): Reservation =
-        redisRepository.spinLock(command.queueToken) {
+        redisRepository.redLock(command.queueToken) {
             reservationService.deleteIfExpired(command.dateUtc, command.seatNumber)
             createReservationCommandValidator.validate(command)
             val concertSeatAmount = concertSeatRepository.getByDateAndSeatNumber(command.dateUtc, command.seatNumber).amount

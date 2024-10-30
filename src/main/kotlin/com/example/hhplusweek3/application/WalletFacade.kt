@@ -21,7 +21,7 @@ class WalletFacade(
 ) {
     @Transactional
     fun charge(command: ChargeWalletCommand): Wallet {
-        redisRepository.spinLock(command.queueToken) {
+        redisRepository.redLock(command.queueToken) {
             chargeWalletCommandValidator.validate(command)
             walletService.add(command.amount, command.queueToken)
         }

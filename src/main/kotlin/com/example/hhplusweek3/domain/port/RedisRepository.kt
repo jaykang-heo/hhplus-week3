@@ -5,4 +5,9 @@ interface RedisRepository {
         key: String,
         action: () -> T,
     ): T?
+
+    fun <T> redLock(
+        key: String,
+        action: () -> T,
+    ): T?
 }

@@ -20,7 +20,7 @@ class PaymentFacade(
     private val redisRepository: RedisRepository,
 ) {
     fun createPayment(command: CreatePaymentCommand): Payment =
-        redisRepository.spinLock(command.queueToken) {
+        redisRepository.redLock(command.queueToken) {
             createPaymentCommandValidator.validate(command)
             val amount = reservationRepository.getByTokenAndReservationId(command.queueToken, command.reservationId).amount
             val payment = Payment(command, amount)
