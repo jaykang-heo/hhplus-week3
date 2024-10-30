@@ -5,6 +5,7 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.ConcertSeat
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
+import com.example.hhplusweek3.domain.port.RedisRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.ReservationService
 import com.example.hhplusweek3.domain.validator.CreateReservationCommandValidator
@@ -28,12 +29,14 @@ class ReservationFacadeTest {
     private val mockReservationService = mock(ReservationService::class.java)
     private val mockCreateReservationCommandValidator = mock(CreateReservationCommandValidator::class.java)
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
+    private val mockRedisRepository = mock(RedisRepository::class.java)
     private val sut =
         ReservationFacade(
             mockReservationService,
             mockCreateReservationCommandValidator,
             mockReservationRepository,
             mockConcertSeatRepository,
+            mockRedisRepository,
         )
 
     @Test

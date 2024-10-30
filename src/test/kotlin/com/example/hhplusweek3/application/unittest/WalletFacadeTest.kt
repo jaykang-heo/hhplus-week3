@@ -3,6 +3,7 @@ package com.example.hhplusweek3.application.unittest
 import com.example.hhplusweek3.application.WalletFacade
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Wallet
+import com.example.hhplusweek3.domain.port.RedisRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
 import com.example.hhplusweek3.domain.service.WalletService
@@ -27,12 +28,14 @@ class WalletFacadeTest {
     private val mockChargeWalletCommandValidator = mock(ChargeWalletCommandValidator::class.java)
     private val mockGetWalletBalanceQueryValidator = mock(GetWalletBalanceQueryValidator::class.java)
     private val mockWalletService = mock(WalletService::class.java)
+    private val mockRedisRepository = mock(RedisRepository::class.java)
     private val sut =
         WalletFacade(
             mockWalletService,
             mockChargeWalletCommandValidator,
             mockGetWalletBalanceQueryValidator,
             mockWalletRepository,
+            mockRedisRepository,
         )
 
     @Test

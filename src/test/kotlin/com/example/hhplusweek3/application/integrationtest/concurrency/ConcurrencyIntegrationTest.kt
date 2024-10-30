@@ -3,6 +3,7 @@ package com.example.hhplusweek3.application.integrationtest.concurrency
 import com.example.hhplusweek3.application.PaymentFacade
 import com.example.hhplusweek3.application.ReservationFacade
 import com.example.hhplusweek3.application.WalletFacade
+import com.example.hhplusweek3.config.IntegrationTest
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
@@ -14,12 +15,11 @@ import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlin.time.measureTime
 
-@SpringBootTest
+@IntegrationTest
 class ConcurrencyIntegrationTest(
     @Autowired private val walletFacade: WalletFacade,
     @Autowired private val paymentFacade: PaymentFacade,
