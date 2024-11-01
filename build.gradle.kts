@@ -29,6 +29,8 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.4.3")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.redisson:redisson-spring-boot-starter:3.27.1")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework:spring-aspects:6.0.11")
 
     runtimeOnly("com.h2database:h2")
 

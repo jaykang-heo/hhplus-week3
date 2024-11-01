@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import java.time.Instant
 
 @Entity
@@ -15,6 +16,8 @@ data class WalletEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
+    @Version
+    val version: Long,
     @Column(unique = true)
     val queueToken: String,
     var balance: Long,
@@ -28,6 +31,7 @@ data class WalletEntity(
         )
 
     constructor(wallet: Wallet) : this(
+        0,
         0,
         wallet.queueToken,
         wallet.balance,

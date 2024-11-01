@@ -20,7 +20,12 @@ interface ConcertSeatRepository {
         seatNumber: Long,
     ): ConcertSeat
 
-    fun getByDateAndSeatNumberWithLockOrThrow(
+    fun getByDateAndSeatNumberWithPessimisticLockOrThrow(
+        dateUtc: Instant,
+        seatNumber: Long,
+    ): ConcertSeat
+
+    fun getByDateAndSeatNumberWithOptimisticLockOrThrow(
         dateUtc: Instant,
         seatNumber: Long,
     ): ConcertSeat

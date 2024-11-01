@@ -2,7 +2,6 @@ package com.example.hhplusweek3.application
 
 import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Wallet
-import com.example.hhplusweek3.domain.port.RedisRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
 import com.example.hhplusweek3.domain.service.WalletService
@@ -17,16 +16,14 @@ class WalletFacade(
     private val chargeWalletCommandValidator: ChargeWalletCommandValidator,
     private val getWalletBalanceQueryValidator: GetWalletBalanceQueryValidator,
     private val walletRepository: WalletRepository,
-    private val redisRepository: RedisRepository,
 ) {
     @Transactional
-    fun charge(command: ChargeWalletCommand): Wallet {
-        redisRepository.redLock(command.queueToken) {
+    fun charge(command: ChargeWalletCommand): Wallet =
+        walletService.executeWithPessimisticLock(command.queueToken) {
             chargeWalletCommandValidator.validate(command)
             walletService.add(command.amount, command.queueToken)
+            walletRepository.getByQueueToken(command.queueToken)
         }
-        return walletRepository.getByQueueToken(command.queueToken)
-    }
 
     fun get(query: GetWalletBalanceQuery): Wallet {
         getWalletBalanceQueryValidator.validate(query)

@@ -3,6 +3,10 @@ package com.example.hhplusweek3.domain.service
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.Wallet
 import com.example.hhplusweek3.domain.port.WalletRepository
+import jakarta.transaction.Transactional
+import org.springframework.dao.OptimisticLockingFailureException
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 
 @Component
@@ -29,12 +33,26 @@ class WalletService(
         walletRepository.save(wallet)
     }
 
-    fun executeWithLock(
+    @Transactional
+    @Retryable(
+        value = [OptimisticLockingFailureException::class],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 50, multiplier = 2.0, maxDelay = 1000),
+    )
+    fun <T> executeWithPessimisticLock(
         queueToken: String,
-        action: () -> Unit,
-    ) {
-        walletRepository.getOrCreateByQueueTokenWithLockOrThrow(queueToken)
-        action.invoke()
+        action: () -> T,
+    ): T {
+        walletRepository.getOrCreateByQueueTokenWithPessimisticLockOrThrow(queueToken)
+        return action.invoke()
+    }
+
+    fun <T> executeWithOptimisticLock(
+        queueToken: String,
+        action: () -> T,
+    ): T {
+        walletRepository.getOrCreateByQueueTokenWithOptimisticLockOrThrow(queueToken)
+        return action.invoke()
     }
 
     fun createEmpty(queues: List<Queue>) {

@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import jakarta.persistence.Version
 import java.time.Instant
 
 @Entity
@@ -23,6 +24,8 @@ class PaymentEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
+    @Version
+    val version: Long,
     val paymentId: String,
     val reservationId: String,
     val queueToken: String,
@@ -38,6 +41,7 @@ class PaymentEntity(
         )
 
     constructor(payment: Payment, queueToken: String) : this(
+        0,
         0,
         payment.paymentId,
         payment.reservationId,

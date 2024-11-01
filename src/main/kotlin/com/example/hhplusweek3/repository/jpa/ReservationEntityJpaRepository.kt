@@ -31,7 +31,14 @@ interface ReservationEntityJpaRepository : JpaRepository<ReservationEntity, Long
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from ReservationEntity r  where r.queueToken = :queueToken and r.reservationId = :reservationId")
-    fun findByReservationIdAndQueueTokenWithLock(
+    fun findByReservationIdAndQueueTokenWithPessimisticLock(
+        @Param("reservationId") reservationId: String,
+        @Param("queueToken") queueToken: String,
+    ): ReservationEntity?
+
+    @Lock(LockModeType.OPTIMISTIC)
+    @Query("select r from ReservationEntity r  where r.queueToken = :queueToken and r.reservationId = :reservationId")
+    fun findByReservationIdAndQueueTokenWithOptimisticLock(
         @Param("reservationId") reservationId: String,
         @Param("queueToken") queueToken: String,
     ): ReservationEntity?

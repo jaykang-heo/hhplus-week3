@@ -12,7 +12,13 @@ interface WalletEntityJpaRepository : JpaRepository<WalletEntity, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select w from WalletEntity w  where w.queueToken = :queueToken")
-    fun findByQueueTokenWithLock(
+    fun findByQueueTokenWithPessimisticLock(
+        @Param("queueToken") queueToken: String,
+    ): WalletEntity?
+
+    @Lock(LockModeType.OPTIMISTIC)
+    @Query("select w from WalletEntity w  where w.queueToken = :queueToken")
+    fun findByQueueTokenWithOptimisticLock(
         @Param("queueToken") queueToken: String,
     ): WalletEntity?
 }

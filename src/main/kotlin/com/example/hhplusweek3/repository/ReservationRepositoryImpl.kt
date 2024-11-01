@@ -3,6 +3,7 @@ package com.example.hhplusweek3.repository
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.model.exception.ReservationNotFoundException
 import com.example.hhplusweek3.domain.port.ReservationRepository
+import com.example.hhplusweek3.repository.jpa.ConcertSeatEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.ReservationEntityJpaRepository
 import com.example.hhplusweek3.repository.model.ReservationEntity
 import org.springframework.stereotype.Repository
@@ -11,9 +12,11 @@ import java.time.Instant
 @Repository
 class ReservationRepositoryImpl(
     private val reservationEntityJpaRepository: ReservationEntityJpaRepository,
+    private val concertSeatEntityJpaRepository: ConcertSeatEntityJpaRepository,
 ) : ReservationRepository {
     override fun save(reservation: Reservation): Reservation {
         val dataModel = ReservationEntity(reservation)
+
         return reservationEntityJpaRepository.save(dataModel).toModel()
     }
 
@@ -49,11 +52,18 @@ class ReservationRepositoryImpl(
         reservationId: String,
     ): Reservation? = reservationEntityJpaRepository.findByReservationIdAndQueueToken(reservationId, token)?.toModel()
 
-    override fun getByTokenAndReservationIdWithLockOrThrow(
+    override fun getByTokenAndReservationIdWithPessimisticLockOrThrow(
         token: String,
         reservationId: String,
     ): Reservation =
-        reservationEntityJpaRepository.findByReservationIdAndQueueTokenWithLock(reservationId, token)?.toModel()
+        reservationEntityJpaRepository.findByReservationIdAndQueueTokenWithPessimisticLock(reservationId, token)?.toModel()
+            ?: throw ReservationNotFoundException(token, reservationId)
+
+    override fun getByTokenAndReservationIdWithOptimisticLockOrThrow(
+        token: String,
+        reservationId: String,
+    ): Reservation =
+        reservationEntityJpaRepository.findByReservationIdAndQueueTokenWithOptimisticLock(reservationId, token)?.toModel()
             ?: throw ReservationNotFoundException(token, reservationId)
 
     override fun getByTokenAndReservationId(

@@ -1,6 +1,6 @@
 package com.example.hhplusweek3.domain.port
 
-interface RedisRepository {
+interface LockRepository {
     fun <T> spinLock(
         key: String,
         action: () -> T,

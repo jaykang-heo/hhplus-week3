@@ -29,11 +29,12 @@ class ConcurrencyIntegrationTest(
     @Autowired private val testUtils: TestUtils,
 ) {
     private val log = KotlinLogging.logger {}
+    private val threadList = listOf(10, 100, 1000, 4000)
 
     @Test
     fun `결제 동시성 통합 테스트 성능 측정`() {
         // given
-        val threadCounts = listOf(10, 100, 1000, 4000)
+        val threadCounts = threadList
         threadCounts.forEach { threadCount ->
             testUtils.resetDatabase()
             val reservation = testUtils.createReservation()
@@ -62,7 +63,7 @@ class ConcurrencyIntegrationTest(
     @Test
     fun `예약 동시성 통합 테스트 성능 측정`() {
         // given
-        val threadCounts = listOf(10, 100, 1000, 4000)
+        val threadCounts = threadList
         threadCounts.forEach { threadCount ->
             testUtils.resetConcertSeats()
             testUtils.resetDatabase()
@@ -98,7 +99,7 @@ class ConcurrencyIntegrationTest(
     @Test
     fun `지갑 동시성 통합 테스트 성능 측정`() {
         // given
-        val threadCounts = listOf(10, 100, 1000, 4000)
+        val threadCounts = threadList
         threadCounts.forEach { threadCount ->
             val amount = 1000L
             val expectedAmount = amount * threadCount
@@ -106,7 +107,8 @@ class ConcurrencyIntegrationTest(
             val queueToken = testUtils.issueAndActivateQueueToken().token
             val initialBalance = walletFacade.get(GetWalletBalanceQuery(queueToken))
             assertThat(initialBalance.balance).isEqualTo(0)
-            val commands = List(threadCount) { ChargeWalletCommand(amount, queueToken) }
+            val commands = (1..threadCount).map { ChargeWalletCommand(amount, queueToken) }
+            assertThat(commands.size).isEqualTo(threadCount)
 
             // when
             val duration =

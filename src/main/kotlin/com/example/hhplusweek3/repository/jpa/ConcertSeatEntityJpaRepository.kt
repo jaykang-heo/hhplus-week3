@@ -16,7 +16,14 @@ interface ConcertSeatEntityJpaRepository : JpaRepository<ConcertSeatEntity, Long
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select c from ConcertSeatEntity c  where c.dateUtc = :dateUtc and c.seatNumber = :seatNumber")
-    fun findByDateUtcAndSeatNumberWithLock(
+    fun findByDateUtcAndSeatNumberWithPessimisticLock(
+        @Param("dateUtc") dateUtc: Instant,
+        @Param("seatNumber") seatNumber: Long,
+    ): ConcertSeatEntity?
+
+    @Lock(LockModeType.OPTIMISTIC)
+    @Query("select c from ConcertSeatEntity c  where c.dateUtc = :dateUtc and c.seatNumber = :seatNumber")
+    fun findByDateUtcAndSeatNumberWithOptimisticLock(
         @Param("dateUtc") dateUtc: Instant,
         @Param("seatNumber") seatNumber: Long,
     ): ConcertSeatEntity?
