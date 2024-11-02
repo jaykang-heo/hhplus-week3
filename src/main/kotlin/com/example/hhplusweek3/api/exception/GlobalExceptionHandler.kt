@@ -65,6 +65,7 @@ class GlobalExceptionHandler {
             ErrorCode.QUEUE_LIMIT_EXCEEDED,
             ErrorCode.INVALID_RESERVATION,
             ErrorCode.ALREADY_PAID_RESERVATION,
+            ErrorCode.ACQUIRE_LOCK_FAILED,
             -> HttpStatus.BAD_REQUEST
             ErrorCode.INSUFFICIENT_BALANCE -> HttpStatus.FORBIDDEN
             ErrorCode.INTERNAL_SERVER_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR

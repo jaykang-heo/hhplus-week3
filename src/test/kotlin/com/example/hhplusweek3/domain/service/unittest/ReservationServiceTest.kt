@@ -1,7 +1,7 @@
 package com.example.hhplusweek3.domain.service.unittest
 
 import com.example.hhplusweek3.domain.model.Reservation
-import com.example.hhplusweek3.domain.port.ConcertSeatRepository
+import com.example.hhplusweek3.domain.port.LockRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.ReservationService
 import org.junit.jupiter.api.DisplayName
@@ -14,8 +14,8 @@ import java.time.Instant
 
 class ReservationServiceTest {
     private val mockReservationRepository = mock(ReservationRepository::class.java)
-    private val concertSeatRepository = mock(ConcertSeatRepository::class.java)
-    private val sut = ReservationService(mockReservationRepository, concertSeatRepository)
+    private val mockLockRepository = mock(LockRepository::class.java)
+    private val sut = ReservationService(mockReservationRepository, mockLockRepository)
 
     @Test
     @DisplayName("예약이 존재하지 않으면, 아무 작업도 하지 않는다")

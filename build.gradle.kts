@@ -29,8 +29,6 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.4.3")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.redisson:redisson-spring-boot-starter:3.27.1")
-    implementation("org.springframework.retry:spring-retry:2.0.2")
-    implementation("org.springframework:spring-aspects:6.0.11")
 
     runtimeOnly("com.h2database:h2")
 
@@ -43,7 +41,8 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.testcontainers:testcontainers:1.19.7")
+
+//    testImplementation("org.testcontainers:testcontainers:1.19.7")
 }
 
 kotlin {

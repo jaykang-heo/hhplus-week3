@@ -2,44 +2,26 @@ package com.example.hhplusweek3.domain.service
 
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Reservation
-import com.example.hhplusweek3.domain.port.ConcertSeatRepository
+import com.example.hhplusweek3.domain.model.exception.AcquireLockFailedException
+import com.example.hhplusweek3.domain.port.LockRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
-import jakarta.transaction.Transactional
-import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class ReservationService(
     private val reservationRepository: ReservationRepository,
-    private val concertSeatRepository: ConcertSeatRepository,
+    private val lockRepository: LockRepository,
 ) {
-    @Transactional
-    fun reserveWithPessimisticLock(
+    fun reserveWithLockOrThrow(
         command: CreateReservationCommand,
         action: () -> Reservation,
-    ): Reservation {
-        concertSeatRepository.getByDateAndSeatNumberWithPessimisticLockOrThrow(command.dateUtc, command.seatNumber)
-        return action.invoke()
-    }
+    ): Reservation =
+        lockRepository.acquireReservationLock(command.dateUtc, command.seatNumber) {
+            action.invoke()
+        }
+            ?: throw AcquireLockFailedException("Reservation lock failed::${command.dateUtc}, ${command.seatNumber}, ${command.queueToken}")
 
-    @Transactional
-    @Retryable(
-        value = [OptimisticLockingFailureException::class],
-        maxAttempts = 3,
-        backoff = Backoff(delay = 50, multiplier = 2.0, maxDelay = 1000),
-    )
-    fun reserveWithOptimisticLock(
-        command: CreateReservationCommand,
-        action: () -> Reservation,
-    ): Reservation {
-        concertSeatRepository.getByDateAndSeatNumberWithOptimisticLockOrThrow(command.dateUtc, command.seatNumber)
-        return action.invoke()
-    }
-
-    @Transactional
     fun deleteIfExpired(
         date: Instant,
         seatNumber: Long,
@@ -51,7 +33,6 @@ class ReservationService(
         }
     }
 
-    @Transactional
     fun isValid(
         dateUtc: Instant,
         seatNumber: Long,

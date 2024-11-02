@@ -1,7 +1,6 @@
 package com.example.hhplusweek3.repository
 
 import com.example.hhplusweek3.domain.model.ConcertSeat
-import com.example.hhplusweek3.domain.model.exception.ConcertSeatNotFoundException
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.repository.jpa.ConcertSeatEntityJpaRepository
 import org.springframework.stereotype.Repository
@@ -27,18 +26,4 @@ class ConcertSeatRepositoryImpl(
         dateUtc: Instant,
         seatNumber: Long,
     ): ConcertSeat = concertSeatEntityJpaRepository.findByDateUtcAndSeatNumber(dateUtc, seatNumber)!!.toModel()
-
-    override fun getByDateAndSeatNumberWithPessimisticLockOrThrow(
-        dateUtc: Instant,
-        seatNumber: Long,
-    ): ConcertSeat =
-        concertSeatEntityJpaRepository.findByDateUtcAndSeatNumberWithPessimisticLock(dateUtc, seatNumber)?.toModel()
-            ?: throw ConcertSeatNotFoundException(dateUtc, seatNumber)
-
-    override fun getByDateAndSeatNumberWithOptimisticLockOrThrow(
-        dateUtc: Instant,
-        seatNumber: Long,
-    ): ConcertSeat =
-        concertSeatEntityJpaRepository.findByDateUtcAndSeatNumberWithOptimisticLock(dateUtc, seatNumber)?.toModel()
-            ?: throw ConcertSeatNotFoundException(dateUtc, seatNumber)
 }

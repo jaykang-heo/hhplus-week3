@@ -1,17 +1,17 @@
 package com.example.hhplusweek3.application.integrationtest.concurrency
 
 import com.example.hhplusweek3.application.ReservationFacade
+import com.example.hhplusweek3.config.IntegrationTest
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.testservice.TestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-@SpringBootTest
+@IntegrationTest
 class ReservationFacadeReserveConcurrencyIntegrationTest(
     @Autowired private val reservationFacade: ReservationFacade,
     @Autowired private val reservationRepository: ReservationRepository,

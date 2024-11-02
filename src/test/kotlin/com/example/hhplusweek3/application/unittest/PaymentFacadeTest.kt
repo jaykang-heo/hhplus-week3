@@ -5,7 +5,6 @@ import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.Payment
 import com.example.hhplusweek3.domain.model.Reservation
-import com.example.hhplusweek3.domain.port.LockRepository
 import com.example.hhplusweek3.domain.port.PaymentRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.PaymentService
@@ -32,7 +31,6 @@ class PaymentFacadeTest {
     private val mockCreatePaymentCommandValidator = mock(CreatePaymentCommandValidator::class.java)
     private val mockWalletService = mock(WalletService::class.java)
     private val mockPaymentService = mock(PaymentService::class.java)
-    private val mockLockRepository = mock(LockRepository::class.java)
     private val sut =
         PaymentFacade(
             mockPaymentService,
@@ -40,7 +38,6 @@ class PaymentFacadeTest {
             mockCreatePaymentCommandValidator,
             mockPaymentRepository,
             mockReservationRepository,
-            mockLockRepository,
         )
 
     @Test
@@ -55,7 +52,7 @@ class PaymentFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Payment>(1)
             lockCallback.invoke()
-        }.`when`(mockPaymentService).createPaymentWithPessimisticLock(any(), any())
+        }.`when`(mockPaymentService).createPaymentWithLockOrThrow(any(), any())
 
         `when`(mockReservationRepository.getByTokenAndReservationId("token", "reservationId")).thenReturn(reservation)
         `when`(mockPaymentRepository.save(any(), any())).thenReturn(payment)
@@ -67,7 +64,7 @@ class PaymentFacadeTest {
         assertEquals(payment, result)
 
         // Verify the complete flow within lock
-        verify(mockPaymentService).createPaymentWithPessimisticLock(eq(command), any())
+        verify(mockPaymentService).createPaymentWithLockOrThrow(eq(command), any())
         verify(mockCreatePaymentCommandValidator).validate(command)
         verify(mockReservationRepository).getByTokenAndReservationId("token", "reservationId")
         verify(mockPaymentRepository, times(1)).save(any(), eq("token")) // Verify saved twice
@@ -87,14 +84,14 @@ class PaymentFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Payment>(1)
             lockCallback.invoke()
-        }.`when`(mockPaymentService).createPaymentWithPessimisticLock(any(), any())
+        }.`when`(mockPaymentService).createPaymentWithLockOrThrow(any(), any())
 
         // when & then
         assertThrows(IllegalArgumentException::class.java) {
             sut.createPayment(command)
         }
 
-        verify(mockPaymentService).createPaymentWithPessimisticLock(eq(command), any())
+        verify(mockPaymentService).createPaymentWithLockOrThrow(eq(command), any())
         verify(mockCreatePaymentCommandValidator).validate(command)
         verifyNoInteractions(mockReservationRepository)
         verifyNoInteractions(mockWalletService)
@@ -113,14 +110,14 @@ class PaymentFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Payment>(1)
             lockCallback.invoke()
-        }.`when`(mockPaymentService).createPaymentWithPessimisticLock(any(), any())
+        }.`when`(mockPaymentService).createPaymentWithLockOrThrow(any(), any())
 
         // when & then
         assertThrows(RuntimeException::class.java) {
             sut.createPayment(command)
         }
 
-        verify(mockPaymentService).createPaymentWithPessimisticLock(eq(command), any())
+        verify(mockPaymentService).createPaymentWithLockOrThrow(eq(command), any())
         verify(mockCreatePaymentCommandValidator).validate(command)
         verify(mockReservationRepository).getByTokenAndReservationId("token", "reservationId")
         verifyNoInteractions(mockWalletService)
@@ -144,14 +141,14 @@ class PaymentFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Payment>(1)
             lockCallback.invoke()
-        }.`when`(mockPaymentService).createPaymentWithPessimisticLock(any(), any())
+        }.`when`(mockPaymentService).createPaymentWithLockOrThrow(any(), any())
 
         // when & then
         assertThrows(RuntimeException::class.java) {
             sut.createPayment(command)
         }
 
-        verify(mockPaymentService).createPaymentWithPessimisticLock(eq(command), any())
+        verify(mockPaymentService).createPaymentWithLockOrThrow(eq(command), any())
         verify(mockCreatePaymentCommandValidator).validate(command)
         verify(mockReservationRepository).getByTokenAndReservationId("token", "reservationId")
         verify(mockWalletService).redeem(reservation.amount, command.queueToken)

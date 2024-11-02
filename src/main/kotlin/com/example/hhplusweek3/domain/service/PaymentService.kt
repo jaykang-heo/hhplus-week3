@@ -2,41 +2,21 @@ package com.example.hhplusweek3.domain.service
 
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.model.Payment
-import com.example.hhplusweek3.domain.port.ReservationRepository
-import com.example.hhplusweek3.domain.port.WalletRepository
-import jakarta.transaction.Transactional
-import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Retryable
+import com.example.hhplusweek3.domain.model.exception.AcquireLockFailedException
+import com.example.hhplusweek3.domain.port.LockRepository
 import org.springframework.stereotype.Component
 
 @Component
 class PaymentService(
-    private val reservationRepository: ReservationRepository,
-    private val walletRepository: WalletRepository,
+    private val lockRepository: LockRepository,
 ) {
-    @Transactional
-    fun createPaymentWithPessimisticLock(
+    fun createPaymentWithLockOrThrow(
         command: CreatePaymentCommand,
         action: () -> Payment,
-    ): Payment {
-        reservationRepository.getByTokenAndReservationIdWithPessimisticLockOrThrow(command.queueToken, command.reservationId)
-        walletRepository.getOrCreateByQueueTokenWithPessimisticLockOrThrow(command.queueToken)
-        return action.invoke()
-    }
-
-    @Transactional
-    @Retryable(
-        value = [OptimisticLockingFailureException::class],
-        maxAttempts = 3,
-        backoff = Backoff(delay = 50, multiplier = 2.0, maxDelay = 1000),
-    )
-    fun createPaymentWithOptimisticLock(
-        command: CreatePaymentCommand,
-        action: () -> Payment,
-    ): Payment {
-        reservationRepository.getByTokenAndReservationIdWithOptimisticLockOrThrow(command.queueToken, command.reservationId)
-        walletRepository.getOrCreateByQueueTokenWithOptimisticLockOrThrow(command.queueToken)
-        return action.invoke()
-    }
+    ): Payment =
+        lockRepository.acquirePaymentLock(command.queueToken, command.reservationId) {
+            lockRepository.acquireWalletLock(command.queueToken) {
+                action.invoke()
+            }
+        } ?: throw AcquireLockFailedException("PaymentFacade::${command.queueToken}, ${command.reservationId}")
 }

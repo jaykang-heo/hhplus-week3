@@ -18,5 +18,20 @@ https://github.com/users/jaykang-heo/projects/2
 # Chapter 2 회고록 
 https://engineerdaily.tistory.com/21
 
-# Step 11 
-[콘서트 대기열 프로젝트 동시성 문제 보고서](https://grand-distance-04e.notion.site/12e95f36f22980789687dfd969595143)
+# 동시성 이슈 
+- 대기열 동시성 이슈 
+  - 구현의 복잡도 
+  - 성능 
+  - 효율성
+- 포인트 충전 동시성 이슈
+  - 구현의 복잡도
+  - 성능
+  - 효율성
+- 콘서트 예약 동시성 이슈
+    - 구현의 복잡도
+    - 성능
+    - 효율성
+- 콘서트 좌석 결제 동시성 이슈
+    - 구현의 복잡도
+    - 성능
+    - 효율성
