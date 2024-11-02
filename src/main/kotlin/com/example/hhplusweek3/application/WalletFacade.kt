@@ -4,7 +4,6 @@ import com.example.hhplusweek3.domain.command.ChargeWalletCommand
 import com.example.hhplusweek3.domain.model.Wallet
 import com.example.hhplusweek3.domain.model.exception.AcquireLockFailedException
 import com.example.hhplusweek3.domain.model.exception.ErrorCode
-import com.example.hhplusweek3.domain.port.LockRepository
 import com.example.hhplusweek3.domain.port.WalletRepository
 import com.example.hhplusweek3.domain.query.GetWalletBalanceQuery
 import com.example.hhplusweek3.domain.service.WalletService
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class WalletFacade(
-    private val lockRepository: LockRepository,
     private val walletService: WalletService,
     private val chargeWalletCommandValidator: ChargeWalletCommandValidator,
     private val getWalletBalanceQueryValidator: GetWalletBalanceQueryValidator,
@@ -23,7 +21,7 @@ class WalletFacade(
 ) {
     @Transactional
     fun charge(command: ChargeWalletCommand): Wallet =
-        lockRepository.acquireWalletLock(command.queueToken) {
+        walletService.executeWithLock(command.queueToken) {
             chargeWalletCommandValidator.validate(command)
             walletService.add(command.amount, command.queueToken)
             walletRepository.getByQueueToken(command.queueToken)

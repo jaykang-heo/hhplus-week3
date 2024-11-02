@@ -31,14 +31,13 @@ class WalletService(
         walletRepository.save(wallet)
     }
 
-    fun executeWithLock(
+    fun <T> executeWithLock(
         queueToken: String,
-        action: () -> Unit,
-    ) {
+        action: () -> T,
+    ): T? =
         lockRepository.acquireWalletLock(queueToken) {
             action.invoke()
         }
-    }
 
     fun createEmpty(queues: List<Queue>) {
         queues.forEach {
