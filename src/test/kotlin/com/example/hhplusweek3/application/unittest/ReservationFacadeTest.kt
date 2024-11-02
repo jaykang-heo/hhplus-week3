@@ -5,6 +5,7 @@ import com.example.hhplusweek3.domain.command.CreateReservationCommand
 import com.example.hhplusweek3.domain.model.ConcertSeat
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.ConcertSeatRepository
+import com.example.hhplusweek3.domain.port.LockRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.ReservationService
 import com.example.hhplusweek3.domain.validator.CreateReservationCommandValidator
@@ -28,12 +29,14 @@ class ReservationFacadeTest {
     private val mockReservationService = mock(ReservationService::class.java)
     private val mockCreateReservationCommandValidator = mock(CreateReservationCommandValidator::class.java)
     private val mockConcertSeatRepository = mock(ConcertSeatRepository::class.java)
+    private val mockLockRepository = mock(LockRepository::class.java)
     private val sut =
         ReservationFacade(
             mockReservationService,
             mockCreateReservationCommandValidator,
             mockReservationRepository,
             mockConcertSeatRepository,
+            mockLockRepository,
         )
 
     @Test
@@ -52,7 +55,7 @@ class ReservationFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Reservation>(1)
             lockCallback.invoke()
-        }.`when`(mockReservationService).reserveWithLock(any(), any())
+        }.`when`(mockReservationService).reserveWithPessimisticLock(any(), any())
 
         `when`(mockConcertSeatRepository.getByDateAndSeatNumber(dateUtc, seatNumber)).thenReturn(concertSeat)
         `when`(mockReservationRepository.save(any())).thenReturn(expectedReservation)
@@ -62,7 +65,7 @@ class ReservationFacadeTest {
 
         // then
         assertEquals(expectedReservation, result)
-        verify(mockReservationService).reserveWithLock(any(), any())
+        verify(mockReservationService).reserveWithPessimisticLock(any(), any())
         verify(mockReservationService).deleteIfExpired(dateUtc, seatNumber)
         verify(mockCreateReservationCommandValidator).validate(command)
         verify(mockConcertSeatRepository).getByDateAndSeatNumber(dateUtc, seatNumber)
@@ -85,14 +88,14 @@ class ReservationFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Reservation>(1)
             lockCallback.invoke()
-        }.`when`(mockReservationService).reserveWithLock(any(), any())
+        }.`when`(mockReservationService).reserveWithPessimisticLock(any(), any())
 
         // when & then
         assertThrows(IllegalStateException::class.java) {
             sut.reserve(command)
         }
 
-        verify(mockReservationService).reserveWithLock(any(), any())
+        verify(mockReservationService).reserveWithPessimisticLock(any(), any())
         verify(mockReservationService).deleteIfExpired(dateUtc, seatNumber)
         verify(mockCreateReservationCommandValidator).validate(command)
         verifyNoInteractions(mockConcertSeatRepository)
@@ -115,14 +118,14 @@ class ReservationFacadeTest {
         doAnswer { invocation ->
             val lockCallback = invocation.getArgument<() -> Reservation>(1)
             lockCallback.invoke()
-        }.`when`(mockReservationService).reserveWithLock(any(), any())
+        }.`when`(mockReservationService).reserveWithPessimisticLock(any(), any())
 
         // when & then
         assertThrows(RuntimeException::class.java) {
             sut.reserve(command)
         }
 
-        verify(mockReservationService).reserveWithLock(any(), any())
+        verify(mockReservationService).reserveWithPessimisticLock(any(), any())
         verify(mockReservationService).deleteIfExpired(dateUtc, seatNumber)
         verifyNoInteractions(mockCreateReservationCommandValidator)
         verifyNoInteractions(mockConcertSeatRepository)

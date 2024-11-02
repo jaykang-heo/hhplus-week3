@@ -18,7 +18,7 @@ class PaymentFacade(
     private val reservationRepository: ReservationRepository,
 ) {
     fun createPayment(command: CreatePaymentCommand): Payment =
-        paymentService.createPaymentWithLock(command) {
+        paymentService.createPaymentWithOptimisticLock(command) {
             createPaymentCommandValidator.validate(command)
             val amount = reservationRepository.getByTokenAndReservationId(command.queueToken, command.reservationId).amount
             val payment = Payment(command, amount)

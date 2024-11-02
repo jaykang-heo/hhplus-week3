@@ -23,7 +23,11 @@ class WalletRepositoryImpl(
 
     override fun findByQueueToken(queueToken: String): Wallet? = walletEntityJpaRepository.findByQueueToken(queueToken)?.toModel()
 
-    override fun getOrCreateByQueueTokenWithLockOrThrow(queueToken: String): Wallet =
-        walletEntityJpaRepository.findByQueueTokenWithLock(queueToken)?.toModel()
+    override fun getOrCreateByQueueTokenWithPessimisticLockOrThrow(queueToken: String): Wallet =
+        walletEntityJpaRepository.findByQueueTokenWithPessimisticLock(queueToken)?.toModel()
+            ?: throw WalletNotFoundException(queueToken)
+
+    override fun getOrCreateByQueueTokenWithOptimisticLockOrThrow(queueToken: String): Wallet =
+        walletEntityJpaRepository.findByQueueTokenWithOptimisticLock(queueToken)?.toModel()
             ?: throw WalletNotFoundException(queueToken)
 }

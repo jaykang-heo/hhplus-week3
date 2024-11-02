@@ -28,7 +28,12 @@ interface ReservationRepository {
         reservationId: String,
     ): Reservation?
 
-    fun getByTokenAndReservationIdWithLockOrThrow(
+    fun getByTokenAndReservationIdWithPessimisticLockOrThrow(
+        token: String,
+        reservationId: String,
+    ): Reservation
+
+    fun getByTokenAndReservationIdWithOptimisticLockOrThrow(
         token: String,
         reservationId: String,
     ): Reservation

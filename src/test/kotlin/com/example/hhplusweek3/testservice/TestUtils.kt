@@ -101,6 +101,7 @@ class TestUtils(
                 (1..50).map {
                     ConcertSeatEntity(
                         0,
+                        0,
                         LocalDate
                             .now()
                             .plusDays(plusDay)
@@ -119,7 +120,7 @@ class TestUtils(
         seatNumber: Long,
         amount: Int = 1,
     ) {
-        val concertSeat = ConcertSeatEntity(0, dateUtc = dateUtc, seatNumber = seatNumber, amount = amount.toLong())
+        val concertSeat = ConcertSeatEntity(0, version = 0, dateUtc = dateUtc, seatNumber = seatNumber, amount = amount.toLong())
         concertSeatEntityJpaRepository.save(concertSeat)
     }
 
@@ -198,7 +199,7 @@ class TestUtils(
                             action(command)
                             null
                         } catch (e: Exception) {
-                            logger.error { e }
+//                            logger.error { e }
                         } finally {
                             endLatch.countDown()
                         }

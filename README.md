@@ -17,3 +17,6 @@ https://github.com/users/jaykang-heo/projects/2
 
 # Chapter 2 회고록 
 https://engineerdaily.tistory.com/21
+
+# Step 11 
+[콘서트 대기열 프로젝트 동시성 문제 보고서](https://grand-distance-04e.notion.site/12e95f36f22980789687dfd969595143)

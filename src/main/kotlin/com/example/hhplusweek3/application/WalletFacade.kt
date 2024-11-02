@@ -18,13 +18,12 @@ class WalletFacade(
     private val walletRepository: WalletRepository,
 ) {
     @Transactional
-    fun charge(command: ChargeWalletCommand): Wallet {
-        walletService.executeWithLock(command.queueToken) {
+    fun charge(command: ChargeWalletCommand): Wallet =
+        walletService.executeWithPessimisticLock(command.queueToken) {
             chargeWalletCommandValidator.validate(command)
             walletService.add(command.amount, command.queueToken)
+            walletRepository.getByQueueToken(command.queueToken)
         }
-        return walletRepository.getByQueueToken(command.queueToken)
-    }
 
     fun get(query: GetWalletBalanceQuery): Wallet {
         getWalletBalanceQueryValidator.validate(query)

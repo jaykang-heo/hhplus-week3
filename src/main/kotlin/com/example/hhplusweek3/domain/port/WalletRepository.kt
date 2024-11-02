@@ -9,5 +9,7 @@ interface WalletRepository {
 
     fun findByQueueToken(queueToken: String): Wallet?
 
-    fun getOrCreateByQueueTokenWithLockOrThrow(queueToken: String): Wallet
+    fun getOrCreateByQueueTokenWithPessimisticLockOrThrow(queueToken: String): Wallet
+
+    fun getOrCreateByQueueTokenWithOptimisticLockOrThrow(queueToken: String): Wallet
 }

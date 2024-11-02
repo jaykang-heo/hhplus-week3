@@ -28,10 +28,17 @@ class ConcertSeatRepositoryImpl(
         seatNumber: Long,
     ): ConcertSeat = concertSeatEntityJpaRepository.findByDateUtcAndSeatNumber(dateUtc, seatNumber)!!.toModel()
 
-    override fun getByDateAndSeatNumberWithLockOrThrow(
+    override fun getByDateAndSeatNumberWithPessimisticLockOrThrow(
         dateUtc: Instant,
         seatNumber: Long,
     ): ConcertSeat =
-        concertSeatEntityJpaRepository.findByDateUtcAndSeatNumberWithLock(dateUtc, seatNumber)?.toModel()
+        concertSeatEntityJpaRepository.findByDateUtcAndSeatNumberWithPessimisticLock(dateUtc, seatNumber)?.toModel()
+            ?: throw ConcertSeatNotFoundException(dateUtc, seatNumber)
+
+    override fun getByDateAndSeatNumberWithOptimisticLockOrThrow(
+        dateUtc: Instant,
+        seatNumber: Long,
+    ): ConcertSeat =
+        concertSeatEntityJpaRepository.findByDateUtcAndSeatNumberWithOptimisticLock(dateUtc, seatNumber)?.toModel()
             ?: throw ConcertSeatNotFoundException(dateUtc, seatNumber)
 }
