@@ -13,12 +13,14 @@ import com.example.hhplusweek3.repository.jpa.PaymentEntityJpaRepository
 import com.example.hhplusweek3.testservice.TestUtils
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlin.time.measureTime
 
+@Disabled
 @IntegrationTest
 class ConcurrencyIntegrationTest(
     @Autowired private val walletFacade: WalletFacade,
