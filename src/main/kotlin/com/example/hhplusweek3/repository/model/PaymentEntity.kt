@@ -14,8 +14,8 @@ import java.time.Instant
     name = "payments",
     uniqueConstraints = [
         UniqueConstraint(
-            name = "uk_payments_queue_token_reservation_id",
-            columnNames = ["queue_token", "reservation_id"],
+            name = "uk_payments_reservation_id",
+            columnNames = [ "reservation_id"],
         ),
     ],
 )
@@ -25,7 +25,6 @@ class PaymentEntity(
     val id: Long,
     val paymentId: String,
     val reservationId: String,
-    val queueToken: String,
     val amount: Long,
     val createdTimeUtc: Instant,
 ) {
@@ -37,11 +36,10 @@ class PaymentEntity(
             createdTimeUtc,
         )
 
-    constructor(payment: Payment, queueToken: String) : this(
+    constructor(payment: Payment) : this(
         0,
         payment.paymentId,
         payment.reservationId,
-        queueToken,
         payment.amount,
         payment.createdTimeUtc,
     )

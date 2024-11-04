@@ -11,10 +11,6 @@ interface ReservationRepository {
         seatNumber: Long,
     ): Reservation?
 
-    fun findAllByOrderNumberIsNullAndBeforeDate(dateUtc: Instant): List<Reservation>
-
-    fun deleteAllByReservationIds(reservationIds: List<String>)
-
     fun deleteByReservationId(reservationId: String)
 
     fun findByToken(token: String): Reservation?

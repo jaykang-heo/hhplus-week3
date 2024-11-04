@@ -3,13 +3,7 @@ package com.example.hhplusweek3.domain.port
 import com.example.hhplusweek3.domain.model.Payment
 
 interface PaymentRepository {
-    fun save(
-        payment: Payment,
-        queueToken: String,
-    ): Payment
+    fun save(payment: Payment): Payment
 
-    fun findByQueueTokenAndReservationId(
-        queueToken: String,
-        reservationId: String,
-    ): Payment?
+    fun findByQueueTokenAndReservationId(reservationId: String): Payment?
 }

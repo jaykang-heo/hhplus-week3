@@ -44,7 +44,7 @@ class CreatePaymentCommandValidator(
             throw InsufficientBalanceException(wallet.balance, reservation.amount)
         }
 
-        val payment = paymentRepository.findByQueueTokenAndReservationId(command.queueToken, command.reservationId)
+        val payment = paymentRepository.findByQueueTokenAndReservationId(command.reservationId)
         if (payment != null) {
             throw AlreadyPaidException(command.queueToken, payment.reservationId)
         }

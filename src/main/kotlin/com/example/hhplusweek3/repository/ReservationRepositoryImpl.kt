@@ -21,15 +21,6 @@ class ReservationRepositoryImpl(
         seatNumber: Long,
     ): Reservation? = reservationEntityJpaRepository.findByReservedDateUtcAndReservedSeatNumber(dateUtc, seatNumber)?.toModel()
 
-    override fun findAllByOrderNumberIsNullAndBeforeDate(dateUtc: Instant): List<Reservation> =
-        reservationEntityJpaRepository.findAllByReservationIdIsNullAndExpirationTimeUtcIsBefore(dateUtc).map {
-            it.toModel()
-        }
-
-    override fun deleteAllByReservationIds(reservationIds: List<String>) {
-        reservationEntityJpaRepository.deleteAllByReservationIdIn(reservationIds)
-    }
-
     override fun deleteByReservationId(reservationId: String) {
         reservationEntityJpaRepository.deleteByReservationId(reservationId)
     }

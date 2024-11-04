@@ -53,8 +53,7 @@ class ConcurrencyIntegrationTest(
             // then
             val actualPayment =
                 paymentEntityJpaRepository.findAll().filter {
-                    it.queueToken == reservation.queueToken &&
-                        it.reservationId == reservation.id
+                    it.reservationId == reservation.id
                 }
             assertThat(actualPayment).hasSize(1)
             log.info { "결제 동시성 테스트 threadCount: $threadCount, duration: $duration" }

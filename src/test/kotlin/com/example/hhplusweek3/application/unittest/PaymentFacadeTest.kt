@@ -55,7 +55,7 @@ class PaymentFacadeTest {
         }.`when`(mockPaymentService).createPaymentWithLockOrThrow(any(), any())
 
         `when`(mockReservationRepository.getByTokenAndReservationId("token", "reservationId")).thenReturn(reservation)
-        `when`(mockPaymentRepository.save(any(), any())).thenReturn(payment)
+        `when`(mockPaymentRepository.save(any())).thenReturn(payment)
 
         // when
         val result = sut.createPayment(command)
@@ -67,7 +67,7 @@ class PaymentFacadeTest {
         verify(mockPaymentService).createPaymentWithLockOrThrow(eq(command), any())
         verify(mockCreatePaymentCommandValidator).validate(command)
         verify(mockReservationRepository).getByTokenAndReservationId("token", "reservationId")
-        verify(mockPaymentRepository, times(1)).save(any(), eq("token")) // Verify saved twice
+        verify(mockPaymentRepository, times(1)).save(any())
         verify(mockWalletService).redeem(reservation.amount, "token")
     }
 
@@ -133,7 +133,7 @@ class PaymentFacadeTest {
         val payment = Payment(command, reservation.amount)
 
         `when`(mockReservationRepository.getByTokenAndReservationId("token", "reservationId")).thenReturn(reservation)
-        `when`(mockPaymentRepository.save(any(), any())).thenReturn(payment)
+        `when`(mockPaymentRepository.save(any())).thenReturn(payment)
         doThrow(RuntimeException("Insufficient balance"))
             .`when`(mockWalletService)
             .redeem(reservation.amount, command.queueToken)
@@ -152,6 +152,6 @@ class PaymentFacadeTest {
         verify(mockCreatePaymentCommandValidator).validate(command)
         verify(mockReservationRepository).getByTokenAndReservationId("token", "reservationId")
         verify(mockWalletService).redeem(reservation.amount, command.queueToken)
-        verify(mockPaymentRepository, times(0)).save(any(), any())
+        verify(mockPaymentRepository, times(0)).save(any())
     }
 }

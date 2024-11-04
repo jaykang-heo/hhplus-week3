@@ -23,6 +23,6 @@ class PaymentFacade(
             val amount = reservationRepository.getByTokenAndReservationId(command.queueToken, command.reservationId).amount
             val payment = Payment(command, amount)
             walletService.redeem(payment.amount, command.queueToken)
-            paymentRepository.save(payment, command.queueToken)
+            paymentRepository.save(payment)
         }
 }

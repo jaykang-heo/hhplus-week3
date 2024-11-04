@@ -33,8 +33,7 @@ class PaymentFacadeCreatePaymentConcurrencyIntegrationTest(
         // then
         val actualPayment =
             paymentEntityJpaRepository.findAll().filter {
-                it.queueToken == reservation.queueToken &&
-                    it.reservationId == reservation.id
+                it.reservationId == reservation.id
             }
         assertThat(actualPayment).hasSize(1)
     }
@@ -59,8 +58,7 @@ class PaymentFacadeCreatePaymentConcurrencyIntegrationTest(
         // then
         val actualPayment =
             paymentEntityJpaRepository.findAll().filter {
-                it.queueToken == queueToken &&
-                    reservations.map { reservation -> reservation.id }.contains(it.reservationId)
+                reservations.map { reservation -> reservation.id }.contains(it.reservationId)
             }
         val actualWalletBalance = walletRepository.getByQueueToken(queueToken).balance
         assertThat(actualPayment).hasSize(10)
@@ -83,8 +81,7 @@ class PaymentFacadeCreatePaymentConcurrencyIntegrationTest(
         // then
         val actualPayment =
             paymentEntityJpaRepository.findAll().filter { paymentEntity ->
-                reservations.map { it.queueToken }.contains(paymentEntity.queueToken) &&
-                    reservations.map { it.id }.contains(paymentEntity.reservationId)
+                reservations.map { it.id }.contains(paymentEntity.reservationId)
             }
         assertThat(actualPayment).hasSize(count)
     }
