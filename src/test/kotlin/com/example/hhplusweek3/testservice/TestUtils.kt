@@ -101,7 +101,6 @@ class TestUtils(
                 (1..50).map {
                     ConcertSeatEntity(
                         0,
-                        0,
                         LocalDate
                             .now()
                             .plusDays(plusDay)
@@ -112,24 +111,6 @@ class TestUtils(
                     )
                 }
             concertSeatEntityJpaRepository.saveAll(concertSeats)
-        }
-    }
-
-    fun createConcertSeat(
-        dateUtc: Instant,
-        seatNumber: Long,
-        amount: Int = 1,
-    ) {
-        val concertSeat = ConcertSeatEntity(0, version = 0, dateUtc = dateUtc, seatNumber = seatNumber, amount = amount.toLong())
-        concertSeatEntityJpaRepository.save(concertSeat)
-    }
-
-    fun createConcertSeats(
-        dateUtc: Instant,
-        totalSeats: Int,
-    ) {
-        for (seatNumber in 1..totalSeats) {
-            createConcertSeat(dateUtc, seatNumber.toLong())
         }
     }
 

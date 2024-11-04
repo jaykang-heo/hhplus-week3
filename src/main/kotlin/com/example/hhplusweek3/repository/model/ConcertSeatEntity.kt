@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.persistence.Version
 import java.time.Instant
 
 @Entity
@@ -15,8 +14,6 @@ class ConcertSeatEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
-    @Version
-    val version: Long,
     val dateUtc: Instant,
     val seatNumber: Long,
     val amount: Long,
