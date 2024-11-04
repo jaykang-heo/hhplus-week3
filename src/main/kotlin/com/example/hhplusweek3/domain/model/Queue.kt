@@ -1,6 +1,5 @@
 package com.example.hhplusweek3.domain.model
 
-import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import java.time.Instant
 import java.util.UUID
 
@@ -9,14 +8,14 @@ data class Queue(
     val status: QueueStatus,
     var expirationTimeUtc: Instant,
     val createdTimeUtc: Instant,
-    var updatedTimeUtc: Instant
+    var updatedTimeUtc: Instant,
 ) {
-    constructor(command: IssueQueueTokenCommand) : this(
+    constructor() : this(
         generateQueueToken(),
         QueueStatus.PENDING,
         generateQueueTokenExpirationTime(),
         Instant.now(),
-        Instant.now()
+        Instant.now(),
     )
 
     fun extendExpirationTime(time: Instant) {
@@ -28,13 +27,10 @@ data class Queue(
     }
 
     companion object {
-        fun generateQueueToken(): String {
-            return UUID.randomUUID().toString().replace("-", "")
-        }
+        fun generateQueueToken(): String = UUID.randomUUID().toString().replace("-", "")
 
-        fun generateQueueTokenExpirationTime(): Instant {
-            return Instant.now().plusSeconds(EXPIRATION_INTERVAL_SECONDS)
-        }
+        fun generateQueueTokenExpirationTime(): Instant = Instant.now().plusSeconds(EXPIRATION_INTERVAL_SECONDS)
+
         private const val EXPIRATION_INTERVAL_SECONDS: Long = 60
     }
 }

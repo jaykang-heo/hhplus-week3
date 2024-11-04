@@ -17,7 +17,7 @@ class QueueFacade(
     private val getQueueQueryValidator: GetQueueQueryValidator,
 ) {
     fun issue(command: IssueQueueTokenCommand): Queue {
-        val queue = queueService.generateQueue(command)
+        val queue = queueService.generateQueue()
         queueRepository.save(queue)
         val queues = queueService.activatePendingQueues()
         walletService.createEmpty(queues)

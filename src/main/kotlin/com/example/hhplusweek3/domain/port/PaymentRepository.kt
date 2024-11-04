@@ -5,5 +5,5 @@ import com.example.hhplusweek3.domain.model.Payment
 interface PaymentRepository {
     fun save(payment: Payment): Payment
 
-    fun findByQueueTokenAndReservationId(reservationId: String): Payment?
+    fun findByReservationId(reservationId: String): Payment?
 }

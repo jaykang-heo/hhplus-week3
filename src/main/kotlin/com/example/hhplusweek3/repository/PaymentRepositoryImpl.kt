@@ -15,6 +15,6 @@ class PaymentRepositoryImpl(
         return paymentEntityJpaRepository.save(dataModel).toModel()
     }
 
-    override fun findByQueueTokenAndReservationId(reservationId: String): Payment? =
+    override fun findByReservationId(reservationId: String): Payment? =
         paymentEntityJpaRepository.findByReservationId(reservationId)?.toModel()
 }

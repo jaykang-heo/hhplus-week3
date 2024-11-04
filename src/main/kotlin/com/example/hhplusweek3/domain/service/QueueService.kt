@@ -1,6 +1,5 @@
 package com.example.hhplusweek3.domain.service
 
-import com.example.hhplusweek3.domain.command.IssueQueueTokenCommand
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.port.QueueRepository
 import org.springframework.stereotype.Component
@@ -11,7 +10,7 @@ import kotlin.math.abs
 class QueueService(
     private val queueRepository: QueueRepository,
 ) {
-    fun generateQueue(command: IssueQueueTokenCommand): Queue = Queue(command)
+    fun generateQueue(): Queue = Queue()
 
     fun extendExpirationTime(queueToken: String) {
         val queue = queueRepository.findByToken(queueToken) ?: return

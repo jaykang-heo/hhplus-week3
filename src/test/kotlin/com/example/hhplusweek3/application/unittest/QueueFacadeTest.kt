@@ -50,7 +50,7 @@ class QueueFacadeTest {
         // given
         val command = IssueQueueTokenCommand()
         val now = Instant.now()
-        val generatedQueue = Queue(command)
+        val generatedQueue = Queue()
 
         // Create activated queues with different tokens
         val activatedQueues =
@@ -71,7 +71,7 @@ class QueueFacadeTest {
                 ),
             )
 
-        `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
+        `when`(mockQueueService.generateQueue()).thenReturn(generatedQueue)
         `when`(mockQueueService.activatePendingQueues()).thenReturn(activatedQueues)
         `when`(mockQueueRepository.save(generatedQueue)).thenReturn(generatedQueue)
         `when`(mockQueueRepository.getByToken(generatedQueue.token)).thenReturn(generatedQueue)
@@ -83,7 +83,7 @@ class QueueFacadeTest {
         assertThat(actual).isEqualTo(generatedQueue)
         assertThat(actual.status).isEqualTo(QueueStatus.PENDING)
         assertThat(actual.expirationTimeUtc).isAfter(now)
-        verify(mockQueueService).generateQueue(command)
+        verify(mockQueueService).generateQueue()
         verify(mockQueueRepository).save(generatedQueue)
         verify(mockQueueService).activatePendingQueues()
         verify(mockWalletService).createEmpty(activatedQueues)
@@ -95,15 +95,15 @@ class QueueFacadeTest {
     fun `when save queue fail, then do not return queue`() {
         // given
         val command = IssueQueueTokenCommand()
-        val generatedQueue = Queue(command)
-        `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
+        val generatedQueue = Queue()
+        `when`(mockQueueService.generateQueue()).thenReturn(generatedQueue)
         `when`(mockQueueRepository.save(generatedQueue)).thenThrow(RuntimeException("Save failed"))
 
         // when & then
         assertThatThrownBy { sut.issue(command) }
             .isInstanceOf(RuntimeException::class.java)
             .hasMessage("Save failed")
-        verify(mockQueueService).generateQueue(command)
+        verify(mockQueueService).generateQueue()
         verify(mockQueueRepository).save(generatedQueue)
         verify(mockQueueService, never()).activatePendingQueues()
         verify(mockQueueRepository, never()).getByToken(any())
@@ -131,7 +131,7 @@ class QueueFacadeTest {
     fun `when get queue info succeed, then return queue`() {
         // given
         val query = GetQueueQuery("token123")
-        val queue = Queue(IssueQueueTokenCommand())
+        val queue = Queue()
         doNothing().`when`(mockGetQueueQueryValidator).validate(query)
         `when`(mockQueueRepository.getByToken("token123")).thenReturn(queue)
 
