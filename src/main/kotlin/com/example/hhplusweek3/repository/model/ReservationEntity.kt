@@ -1,43 +1,40 @@
 package com.example.hhplusweek3.repository.model
 
 import com.example.hhplusweek3.domain.model.Reservation
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
+import org.springframework.data.annotation.Id
+import org.springframework.data.redis.core.RedisHash
+import org.springframework.data.redis.core.TimeToLive
+import org.springframework.data.redis.core.index.Indexed
+import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 
-@Entity
-@Table(
-    name = "reservations",
-    uniqueConstraints = [
-        UniqueConstraint(
-            name = "uk_reservations_date_utc_seat_number",
-            columnNames = ["reserved_date_utc", "reserved_seat_number"],
-        ),
-    ],
-)
+@RedisHash("reservations")
 class ReservationEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
     val reservationId: String,
     val paymentId: String?,
+    @Indexed
     val queueToken: String,
     val reservedSeatNumber: Long,
+    @Indexed
     val reservedDateUtc: Instant,
     val amount: Long,
     val createdTimeUtc: Instant,
     val updatedTimeUtc: Instant,
     val expirationTimeUtc: Instant,
+    @TimeToLive(unit = TimeUnit.SECONDS)
+    val ttl: Long =
+        Duration
+            .between(Instant.now(), expirationTimeUtc)
+            .toSeconds()
+            .coerceAtLeast(1),
 ) {
     fun toModel(): Reservation =
         Reservation(
             reservationId,
             paymentId,
-            queueToken = queueToken,
+            queueToken,
             reservedDateUtc,
             reservedSeatNumber,
             amount,
@@ -47,10 +44,9 @@ class ReservationEntity(
         )
 
     constructor(reservation: Reservation) : this(
-        0,
         reservation.id,
         reservation.paymentId,
-        queueToken = reservation.queueToken,
+        reservation.queueToken,
         reservation.reservedSeat,
         reservation.dateTimeUtc,
         reservation.amount,

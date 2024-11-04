@@ -17,7 +17,6 @@ class ReservationFacade(
 ) {
     fun reserve(command: CreateReservationCommand): Reservation =
         reservationService.reserveWithLockOrThrow(command) {
-            reservationService.deleteIfExpired(command.dateUtc, command.seatNumber)
             createReservationCommandValidator.validate(command)
             val concertSeatAmount = concertSeatRepository.getByDateAndSeatNumber(command.dateUtc, command.seatNumber).amount
             val reservation = Reservation(command, concertSeatAmount)

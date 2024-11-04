@@ -63,7 +63,6 @@ class ReservationFacadeTest {
         // then
         assertEquals(expectedReservation, result)
         verify(mockReservationService).reserveWithLockOrThrow(any(), any())
-        verify(mockReservationService).deleteIfExpired(dateUtc, seatNumber)
         verify(mockCreateReservationCommandValidator).validate(command)
         verify(mockConcertSeatRepository).getByDateAndSeatNumber(dateUtc, seatNumber)
         verify(mockReservationRepository).save(any())
@@ -93,38 +92,7 @@ class ReservationFacadeTest {
         }
 
         verify(mockReservationService).reserveWithLockOrThrow(any(), any())
-        verify(mockReservationService).deleteIfExpired(dateUtc, seatNumber)
         verify(mockCreateReservationCommandValidator).validate(command)
-        verifyNoInteractions(mockConcertSeatRepository)
-        verifyNoInteractions(mockReservationRepository)
-    }
-
-    @Test
-    @DisplayName("만료된 예약 삭제 중 예외가 발생하면, 예약 생성이 중단된다")
-    fun `when delete expired reservation fails, then stop reservation process`() {
-        // given
-        val token = UUID.randomUUID().toString()
-        val seatNumber = Random.nextLong()
-        val dateUtc = Instant.now().plusSeconds(10)
-        val command = CreateReservationCommand(token, seatNumber, dateUtc)
-
-        doThrow(RuntimeException("Failed to delete expired reservation"))
-            .`when`(mockReservationService)
-            .deleteIfExpired(dateUtc, seatNumber)
-
-        doAnswer { invocation ->
-            val lockCallback = invocation.getArgument<() -> Reservation>(1)
-            lockCallback.invoke()
-        }.`when`(mockReservationService).reserveWithLockOrThrow(any(), any())
-
-        // when & then
-        assertThrows(RuntimeException::class.java) {
-            sut.reserve(command)
-        }
-
-        verify(mockReservationService).reserveWithLockOrThrow(any(), any())
-        verify(mockReservationService).deleteIfExpired(dateUtc, seatNumber)
-        verifyNoInteractions(mockCreateReservationCommandValidator)
         verifyNoInteractions(mockConcertSeatRepository)
         verifyNoInteractions(mockReservationRepository)
     }

@@ -54,12 +54,6 @@ class ReservationFacadeIntegrationTest(
     @Test
     @DisplayName("예약할때 만료된 예약이 있다면 만료 시킨다")
     fun `when make reservation and there are expired reservations, then expire expired reservations`() {
-        val expiredReservationCommand =
-            CreateReservationCommand(
-                queueToken = activeQueue.token,
-                dateUtc = testDate,
-                seatNumber = testSeatNumber,
-            )
         val expiredReservation =
             Reservation(
                 id = "expired-reservation-id",
@@ -79,13 +73,15 @@ class ReservationFacadeIntegrationTest(
         assertThat(existingReservation!!.expirationTimeUtc).isBefore(Instant.now())
         assertThat(existingReservation.paymentId).isNull()
 
+        Thread.sleep(1000)
+
         val newReservationCommand =
             CreateReservationCommand(
                 queueToken = activeQueue.token,
                 dateUtc = testDate,
                 seatNumber = testSeatNumber,
             )
-        val newReservation = sut.reserve(newReservationCommand)
+        sut.reserve(newReservationCommand)
 
         val deletedReservation = reservationRepository.findReservationBySeatNumberAndDate(testDate, testSeatNumber)
         assertThat(deletedReservation).isNotNull

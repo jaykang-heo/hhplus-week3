@@ -28,6 +28,9 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
     implementation("io.github.microutils:kotlin-logging:1.4.3")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("com.github.ben-manes.caffeine:caffeine")
+
     implementation("org.redisson:redisson-spring-boot-starter:3.27.1")
 
     runtimeOnly("com.h2database:h2")

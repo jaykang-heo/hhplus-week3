@@ -122,6 +122,7 @@ class ConcertFacadeIntegrationTest(
     fun `when finding available dates and all dates are available, then return all dates`() {
         // given
         testUtils.resetConcertSeats()
+        testUtils.resetReservations()
 
         // when
         val actual = sut.findAvailableDates()

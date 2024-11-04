@@ -14,10 +14,11 @@ import com.example.hhplusweek3.domain.service.ConcertService
 import com.example.hhplusweek3.repository.jpa.ConcertSeatEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.PaymentEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
-import com.example.hhplusweek3.repository.jpa.ReservationEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.WalletEntityJpaRepository
 import com.example.hhplusweek3.repository.model.ConcertSeatEntity
+import com.example.hhplusweek3.repository.redis.ReservationEntityRepository
 import mu.KotlinLogging
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -33,7 +34,7 @@ class TestUtils(
     private val reservationFacade: ReservationFacade,
     private val queueFacade: QueueFacade,
     private val queueEntityJpaRepository: QueueEntityJpaRepository,
-    private val reservationEntityJpaRepository: ReservationEntityJpaRepository,
+    private val reservationEntityRepository: ReservationEntityRepository,
     private val queueRepository: QueueRepository,
     private val walletEntityJpaRepository: WalletEntityJpaRepository,
     private val walletFacade: WalletFacade,
@@ -42,7 +43,7 @@ class TestUtils(
 ) {
     fun resetDatabase() {
         queueEntityJpaRepository.deleteAll()
-        reservationEntityJpaRepository.deleteAll()
+        reservationEntityRepository.deleteAll()
         paymentEntityJpaRepository.deleteAll()
         resetConcertSeats()
     }
@@ -91,6 +92,12 @@ class TestUtils(
         }
     }
 
+    @CacheEvict(
+        cacheNames = [
+            "concertSeats",
+        ],
+        allEntries = true,
+    )
     fun resetConcertSeats(
         fromPlusDay: Long = 1,
         toPlusDay: Long = 10,
@@ -116,7 +123,7 @@ class TestUtils(
 
     fun resetAndReserveAllSeatsInDate(date: Instant) {
         queueEntityJpaRepository.deleteAll()
-        reservationEntityJpaRepository.deleteAll()
+        reservationEntityRepository.deleteAll()
         val queues = (1..50).map { queueFacade.issue(IssueQueueTokenCommand()).token }
         queues.mapIndexed { index, s ->
             val command = CreateReservationCommand(s, (index + 1).toLong(), date)
@@ -126,7 +133,7 @@ class TestUtils(
 
     fun resetAndReserveHalfSeatsInDate(date: Instant) {
         queueEntityJpaRepository.deleteAll()
-        reservationEntityJpaRepository.deleteAll()
+        reservationEntityRepository.deleteAll()
         val queues = (1..25).map { queueFacade.issue(IssueQueueTokenCommand()).token }
 
         queues.mapIndexed { index, s ->
@@ -144,7 +151,7 @@ class TestUtils(
     }
 
     fun resetReservations() {
-        reservationEntityJpaRepository.deleteAll()
+        reservationEntityRepository.deleteAll()
     }
 
     fun activateQueue(token: String) {
