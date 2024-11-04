@@ -9,7 +9,6 @@ import com.example.hhplusweek3.domain.query.GetQueueQuery
 import com.example.hhplusweek3.domain.service.QueueService
 import com.example.hhplusweek3.domain.service.WalletService
 import com.example.hhplusweek3.domain.validator.GetQueueQueryValidator
-import com.example.hhplusweek3.domain.validator.IssueQueueTokenCommandValidator
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -25,7 +24,6 @@ import org.mockito.kotlin.verify
 import java.time.Instant
 
 class QueueFacadeTest {
-    private lateinit var mockIssueQueueTokenCommandValidator: IssueQueueTokenCommandValidator
     private lateinit var mockQueueRepository: QueueRepository
     private lateinit var mockQueueService: QueueService
     private lateinit var mockGetQueueQueryValidator: GetQueueQueryValidator
@@ -34,7 +32,6 @@ class QueueFacadeTest {
 
     @BeforeEach
     fun setup() {
-        mockIssueQueueTokenCommandValidator = mock(IssueQueueTokenCommandValidator::class.java)
         mockQueueRepository = mock(QueueRepository::class.java)
         mockQueueService = mock(QueueService::class.java)
         mockGetQueueQueryValidator = mock(GetQueueQueryValidator::class.java)
@@ -100,7 +97,6 @@ class QueueFacadeTest {
         val command = IssueQueueTokenCommand()
         val generatedQueue = Queue(command)
         `when`(mockQueueService.generateQueue(command)).thenReturn(generatedQueue)
-        doNothing().`when`(mockIssueQueueTokenCommandValidator).validate(command)
         `when`(mockQueueRepository.save(generatedQueue)).thenThrow(RuntimeException("Save failed"))
 
         // when & then
