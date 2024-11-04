@@ -11,14 +11,17 @@ import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.service.ConcertService
+import com.example.hhplusweek3.repository.QueueRepositoryImpl.Companion.ACTIVE_SET
+import com.example.hhplusweek3.repository.QueueRepositoryImpl.Companion.PENDING_ZSET
+import com.example.hhplusweek3.repository.QueueRepositoryImpl.Companion.QUEUE_PREFIX
 import com.example.hhplusweek3.repository.jpa.ConcertSeatEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.PaymentEntityJpaRepository
-import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.WalletEntityJpaRepository
 import com.example.hhplusweek3.repository.model.ConcertSeatEntity
 import com.example.hhplusweek3.repository.redis.ReservationEntityRepository
 import mu.KotlinLogging
 import org.springframework.cache.annotation.CacheEvict
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -33,28 +36,63 @@ class TestUtils(
     private val concertSeatEntityJpaRepository: ConcertSeatEntityJpaRepository,
     private val reservationFacade: ReservationFacade,
     private val queueFacade: QueueFacade,
-    private val queueEntityJpaRepository: QueueEntityJpaRepository,
     private val reservationEntityRepository: ReservationEntityRepository,
     private val queueRepository: QueueRepository,
     private val walletEntityJpaRepository: WalletEntityJpaRepository,
     private val walletFacade: WalletFacade,
     private val paymentEntityJpaRepository: PaymentEntityJpaRepository,
     private val concertService: ConcertService,
+    private val redisTemplate: StringRedisTemplate,
 ) {
     fun resetDatabase() {
-        queueEntityJpaRepository.deleteAll()
         reservationEntityRepository.deleteAll()
+        val queueKeys = redisTemplate.keys("queue:*")
+        redisTemplate.delete(queueKeys)
+        redisTemplate.delete("queues:pending")
+        redisTemplate.delete("queues:active")
+
         paymentEntityJpaRepository.deleteAll()
         resetConcertSeats()
     }
 
     fun issueQueueToken(): String = queueFacade.issue(IssueQueueTokenCommand()).token
 
+    fun update(queue: Queue): Queue {
+        val key = QUEUE_PREFIX + queue.token
+        val queueData =
+            mapOf(
+                "token" to queue.token,
+                "status" to queue.status.name,
+                "createdTimeUtc" to queue.createdTimeUtc.toString(),
+                "expirationTimeUtc" to queue.expirationTimeUtc.toString(),
+            )
+        redisTemplate.opsForHash<String, String>().putAll(key, queueData)
+
+        // Handle sets based on status
+        when (queue.status) {
+            QueueStatus.ACTIVE -> {
+                redisTemplate.opsForZSet().remove(PENDING_ZSET, queue.token)
+                redisTemplate.opsForSet().add(ACTIVE_SET, queue.token)
+            }
+            QueueStatus.EXPIRED -> {
+                redisTemplate.opsForZSet().remove(PENDING_ZSET, queue.token)
+                redisTemplate.opsForSet().remove(ACTIVE_SET, queue.token)
+            }
+            QueueStatus.PENDING -> {
+                redisTemplate.opsForSet().remove(ACTIVE_SET, queue.token)
+                val score = queue.createdTimeUtc.toEpochMilli().toDouble()
+                redisTemplate.opsForZSet().add(PENDING_ZSET, queue.token, score)
+            }
+        }
+
+        return queue
+    }
+
     fun setQueueToPendingStatus(queueToken: String): Queue {
-        val queue = queueEntityJpaRepository.findByToken(queueToken)!!
+        val queue = queueRepository.findByToken(queueToken)!!
         queue.status = QueueStatus.PENDING
-        val savedQueue = queueEntityJpaRepository.save(queue)
-        return savedQueue.toModel()
+        val savedQueue = update(queue)
+        return savedQueue
     }
 
     fun issue(): Queue = queueFacade.issue(IssueQueueTokenCommand())
@@ -103,6 +141,7 @@ class TestUtils(
         toPlusDay: Long = 10,
     ) {
         concertSeatEntityJpaRepository.deleteAll()
+
         (fromPlusDay..toPlusDay).map { plusDay ->
             val concertSeats =
                 (1..50).map {
@@ -122,8 +161,8 @@ class TestUtils(
     }
 
     fun resetAndReserveAllSeatsInDate(date: Instant) {
-        queueEntityJpaRepository.deleteAll()
         reservationEntityRepository.deleteAll()
+        resetQueues()
         val queues = (1..50).map { queueFacade.issue(IssueQueueTokenCommand()).token }
         queues.mapIndexed { index, s ->
             val command = CreateReservationCommand(s, (index + 1).toLong(), date)
@@ -132,7 +171,7 @@ class TestUtils(
     }
 
     fun resetAndReserveHalfSeatsInDate(date: Instant) {
-        queueEntityJpaRepository.deleteAll()
+        resetQueues()
         reservationEntityRepository.deleteAll()
         val queues = (1..25).map { queueFacade.issue(IssueQueueTokenCommand()).token }
 
@@ -143,7 +182,10 @@ class TestUtils(
     }
 
     fun resetQueues() {
-        queueEntityJpaRepository.deleteAll()
+        val queueKeys = redisTemplate.keys("queue:*")
+        redisTemplate.delete(queueKeys)
+        redisTemplate.delete("queues:pending")
+        redisTemplate.delete("queues:active")
     }
 
     fun resetWallets() {
@@ -155,17 +197,26 @@ class TestUtils(
     }
 
     fun activateQueue(token: String) {
-        queueRepository.changeStatusToActive(token)
+        changeStatusToActive(token)
     }
 
-    fun getActiveQueues(): List<Queue> = queueRepository.findAllActive()
+    fun changeStatusToActive(token: String): Queue {
+        val key = QUEUE_PREFIX + token
+        redisTemplate.opsForHash<String, String>().put(key, "status", QueueStatus.ACTIVE.name)
+        redisTemplate.opsForZSet().remove(PENDING_ZSET, token)
+        redisTemplate.opsForSet().add(ACTIVE_SET, token)
+        return queueRepository.findByToken(token)!!
+    }
 
-    fun getPendingQueues(): List<Queue> = queueRepository.findAllPending()
+    fun getActiveQueues(): List<Queue> {
+        val tokens = redisTemplate.opsForSet().members(ACTIVE_SET) ?: emptySet()
+        return tokens.mapNotNull { queueRepository.findByToken(it) }
+    }
 
     fun issueAndActivateQueueToken(): Queue {
         val command = IssueQueueTokenCommand()
         val queue = queueFacade.issue(command)
-        queueRepository.changeStatusToActive(queue.token)
+        changeStatusToActive(queue.token)
         return queue.copy(status = QueueStatus.ACTIVE)
     }
 
@@ -187,7 +238,7 @@ class TestUtils(
                             action(command)
                             null
                         } catch (e: Exception) {
-//                            logger.error { e }
+                            //                            logger.error { e }
                         } finally {
                             endLatch.countDown()
                         }
