@@ -6,19 +6,15 @@ import java.time.Instant
 interface QueueRepository {
     fun save(queue: Queue): Queue
 
-    fun update(queue: Queue): Queue
-
-    fun findAllByActiveAndBeforeTime(time: Instant): List<Queue>
-
-    fun changeStatusToExpire(tokens: List<String>)
-
     fun getByToken(token: String): Queue
 
     fun findByToken(token: String): Queue?
 
-    fun findAllPending(): List<Queue>
+    fun expireBeforeTime(time: Instant)
 
-    fun findAllActive(): List<Queue>
+    fun countActiveQueues(): Int
 
-    fun changeStatusToActive(token: String): Queue
+    fun findPendingTokens(limit: Long): Set<String>
+
+    fun activatePendingQueues(tokens: Set<String>): List<Queue>
 }

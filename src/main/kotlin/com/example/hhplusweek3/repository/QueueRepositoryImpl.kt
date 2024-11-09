@@ -3,55 +3,76 @@ package com.example.hhplusweek3.repository
 import com.example.hhplusweek3.domain.model.Queue
 import com.example.hhplusweek3.domain.model.QueueStatus
 import com.example.hhplusweek3.domain.port.QueueRepository
-import com.example.hhplusweek3.repository.jpa.QueueEntityJpaRepository
-import com.example.hhplusweek3.repository.model.QueueEntity
-import jakarta.transaction.Transactional
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.Instant
 
 @Repository
 class QueueRepositoryImpl(
-    private val queueEntityJpaRepository: QueueEntityJpaRepository,
+    private val redisTemplate: RedisTemplate<String, String>,
 ) : QueueRepository {
+    companion object {
+        const val QUEUE_PREFIX = "queue:"
+        const val PENDING_ZSET = "queues:pending"
+        const val ACTIVE_SET = "queues:active"
+    }
+
     override fun save(queue: Queue): Queue {
-        val entity = QueueEntity(queue)
-        return queueEntityJpaRepository.save(entity).toModel()
+        val key = QUEUE_PREFIX + queue.token
+        val queueData =
+            mapOf(
+                "token" to queue.token,
+                "status" to queue.status.name,
+                "createdTimeUtc" to queue.createdTimeUtc.toString(),
+                "expirationTimeUtc" to queue.expirationTimeUtc.toString(),
+            )
+        redisTemplate.opsForHash<String, String>().putAll(key, queueData)
+        val score = queue.createdTimeUtc.toEpochMilli().toDouble()
+        redisTemplate.opsForZSet().add(PENDING_ZSET, queue.token, score)
+        return queue
     }
 
-    override fun update(queue: Queue): Queue {
-        val entity = QueueEntity(queue)
-        entity.id = queueEntityJpaRepository.findByToken(entity.token)!!.id
-        return queueEntityJpaRepository.save(entity).toModel()
+    override fun getByToken(token: String): Queue = findByToken(token) ?: throw Exception("Queue not found")
+
+    override fun findByToken(token: String): Queue? {
+        val key = QUEUE_PREFIX + token
+        val queueData = redisTemplate.opsForHash<String, String>().entries(key)
+        if (queueData.isEmpty()) return null
+        return Queue.fromMap(queueData)
     }
 
-    override fun findAllByActiveAndBeforeTime(time: Instant): List<Queue> =
-        queueEntityJpaRepository
-            .findAllByStatusAndExpirationTimeUtcBefore(QueueStatus.ACTIVE, time)
-            .map { it.toModel() }
-
-    @Transactional
-    override fun changeStatusToExpire(tokens: List<String>) {
-        val expiredQueues =
-            queueEntityJpaRepository
-                .findAllByTokenIn(tokens.toSet())
-                .map {
-                    it.status = QueueStatus.EXPIRED
-                    it
+    override fun expireBeforeTime(time: Instant) {
+        val tokens = redisTemplate.opsForSet().members(ACTIVE_SET) ?: emptySet()
+        tokens.forEach { token ->
+            val key = QUEUE_PREFIX + token
+            val expirationTimeStr = redisTemplate.opsForHash<String, String>().get(key, "expirationTimeUtc")
+            if (expirationTimeStr != null) {
+                val expirationTime = Instant.parse(expirationTimeStr)
+                if (expirationTime.isBefore(time)) {
+                    redisTemplate.opsForHash<String, String>().put(key, "status", QueueStatus.EXPIRED.name)
+                    redisTemplate.opsForSet().remove(ACTIVE_SET, token)
                 }
-        queueEntityJpaRepository.saveAll(expiredQueues)
+            }
+        }
     }
 
-    override fun getByToken(token: String): Queue = queueEntityJpaRepository.findByToken(token)!!.toModel()
+    override fun countActiveQueues(): Int = redisTemplate.opsForSet().size(ACTIVE_SET)?.toInt() ?: 0
 
-    override fun findByToken(token: String): Queue? = queueEntityJpaRepository.findByToken(token)?.toModel()
+    override fun findPendingTokens(limit: Long): Set<String> =
+        redisTemplate
+            .opsForZSet()
+            .range(PENDING_ZSET, 0, limit - 1) ?: emptySet()
 
-    override fun findAllPending(): List<Queue> = queueEntityJpaRepository.findAllByStatus(QueueStatus.PENDING).map { it.toModel() }
+    override fun activatePendingQueues(tokens: Set<String>): List<Queue> {
+        if (tokens.isEmpty()) return emptyList()
 
-    override fun findAllActive(): List<Queue> = queueEntityJpaRepository.findAllByStatus(QueueStatus.ACTIVE).map { it.toModel() }
+        tokens.forEach { token ->
+            redisTemplate.opsForZSet().remove(PENDING_ZSET, token)
+            redisTemplate.opsForSet().add(ACTIVE_SET, token)
+            val key = QUEUE_PREFIX + token
+            redisTemplate.opsForHash<String, String>().put(key, "status", QueueStatus.ACTIVE.name)
+        }
 
-    override fun changeStatusToActive(token: String): Queue {
-        val dataModel = queueEntityJpaRepository.findByToken(token)!!
-        dataModel.status = QueueStatus.ACTIVE
-        return queueEntityJpaRepository.save(dataModel).toModel()
+        return tokens.mapNotNull { findByToken(it) }
     }
 }

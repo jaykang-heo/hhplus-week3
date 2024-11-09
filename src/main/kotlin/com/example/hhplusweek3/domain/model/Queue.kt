@@ -5,7 +5,7 @@ import java.util.UUID
 
 data class Queue(
     val token: String,
-    val status: QueueStatus,
+    var status: QueueStatus,
     var expirationTimeUtc: Instant,
     val createdTimeUtc: Instant,
     var updatedTimeUtc: Instant,
@@ -18,19 +18,20 @@ data class Queue(
         Instant.now(),
     )
 
-    fun extendExpirationTime(time: Instant) {
-        expirationTimeUtc = time.plusSeconds(EXPIRATION_INTERVAL_SECONDS)
-    }
-
-    fun updateUpdatedTime(time: Instant) {
-        updatedTimeUtc = time
-    }
-
     companion object {
         fun generateQueueToken(): String = UUID.randomUUID().toString().replace("-", "")
 
         fun generateQueueTokenExpirationTime(): Instant = Instant.now().plusSeconds(EXPIRATION_INTERVAL_SECONDS)
 
-        private const val EXPIRATION_INTERVAL_SECONDS: Long = 60
+        fun fromMap(map: Map<String, String>): Queue =
+            Queue(
+                token = map["token"] ?: throw IllegalArgumentException("Token is missing"),
+                status = QueueStatus.valueOf(map["status"] ?: "PENDING"),
+                expirationTimeUtc = Instant.parse(map["expirationTimeUtc"] ?: Instant.now().toString()),
+                createdTimeUtc = Instant.parse(map["createdTimeUtc"] ?: Instant.now().toString()),
+                updatedTimeUtc = Instant.parse(map["updatedTimeUtc"] ?: Instant.now().toString()),
+            )
+
+        const val EXPIRATION_INTERVAL_SECONDS: Long = 60
     }
 }

@@ -40,7 +40,7 @@ class WalletFacadeIntegrationTest(
     @DisplayName("지갑을 충전할떄 토큰이 활성화 되어 있지 않다면, 에러를 반환한다")
     fun `when charge wallet and queue token is not active, then throw error`() {
         val nonActiveQueue = activeQueue.copy(status = QueueStatus.PENDING)
-        queueRepository.update(nonActiveQueue)
+        testUtils.update(nonActiveQueue)
 
         val chargeCommand =
             ChargeWalletCommand(
@@ -118,7 +118,7 @@ class WalletFacadeIntegrationTest(
     @DisplayName("지갑을 조회할떄 토큰이 활성화 되어 있지 않다면, 에러를 반환한다")
     fun `when get wallet and queue token is not active, then throw error`() {
         val nonActiveQueue = activeQueue.copy(status = QueueStatus.EXPIRED)
-        queueRepository.update(nonActiveQueue)
+        testUtils.update(nonActiveQueue)
 
         val getQuery =
             GetWalletBalanceQuery(

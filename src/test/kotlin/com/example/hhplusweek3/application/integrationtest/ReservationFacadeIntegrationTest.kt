@@ -92,7 +92,7 @@ class ReservationFacadeIntegrationTest(
     @DisplayName("예약할떄 사용하는 대기열 토큰이 만료됐다면, 에러를 반환한다")
     fun `when make reservation and the queue token is expire, then throw error`() {
         activeQueue = activeQueue.copy(status = QueueStatus.EXPIRED)
-        queueRepository.update(activeQueue)
+        testUtils.update(activeQueue)
 
         val reservationCommand =
             CreateReservationCommand(
