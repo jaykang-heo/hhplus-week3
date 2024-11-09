@@ -10,11 +10,13 @@ import org.springframework.stereotype.Repository
 class PaymentRepositoryImpl(
     private val paymentEntityJpaRepository: PaymentEntityJpaRepository,
 ) : PaymentRepository {
-    override fun save(payment: Payment): Payment {
-        val dataModel = PaymentEntity(payment)
-        return paymentEntityJpaRepository.save(dataModel).toModel()
-    }
+    override fun save(payment: Payment): Payment =
+        paymentEntityJpaRepository
+            .save(PaymentEntity(payment))
+            .toModel()
 
     override fun findByReservationId(reservationId: String): Payment? =
-        paymentEntityJpaRepository.findByReservationId(reservationId)?.toModel()
+        paymentEntityJpaRepository
+            .findByReservationId(reservationId)
+            ?.toModel()
 }

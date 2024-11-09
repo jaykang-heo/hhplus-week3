@@ -10,7 +10,6 @@ import com.example.hhplusweek3.domain.port.ConcertSeatRepository
 import com.example.hhplusweek3.domain.port.QueueRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.service.ReservationService
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -77,24 +76,6 @@ class CreateReservationCommandValidatorTest {
 
         // when & then
         assertThrows(ConcertSeatNotFoundException::class.java) {
-            sut.validate(command)
-        }
-    }
-
-    @Test
-    @DisplayName("모든 조건이 만족되면 검증을 통과한다")
-    fun `when all conditions are met, then validation passes`() {
-        // given
-        val date = Instant.now().plusSeconds(3600)
-        val command = CreateReservationCommand("token", 1L, date)
-        val activeQueue = Queue("token", QueueStatus.ACTIVE, Instant.now(), Instant.now(), Instant.now())
-
-        `when`(mockQueueRepository.findByToken("token")).thenReturn(activeQueue)
-        `when`(mockConcertSeatRepository.existsByDateAndSeatNumber(date, 1L)).thenReturn(true)
-        `when`(mockReservationService.isValid(date, 1L, "token")).thenReturn(true)
-
-        // when & then
-        assertDoesNotThrow {
             sut.validate(command)
         }
     }

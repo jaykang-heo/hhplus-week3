@@ -11,10 +11,6 @@ interface ReservationRepository {
         seatNumber: Long,
     ): Reservation?
 
-    fun deleteByReservationId(reservationId: String)
-
-    fun findByToken(token: String): Reservation?
-
     fun findAllByDate(dateUtc: Instant): List<Reservation>
 
     fun findAll(): List<Reservation>
@@ -28,9 +24,4 @@ interface ReservationRepository {
         token: String,
         reservationId: String,
     ): Reservation
-
-    fun findBySeatNumberAndDate(
-        seatNumber: Long,
-        dateUtc: Instant,
-    ): Reservation?
 }
