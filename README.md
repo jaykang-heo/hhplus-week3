@@ -38,3 +38,4 @@ https://engineerdaily.tistory.com/21
 
 # 3-3 대용량 트래픽 & 데이터 처리
 - Step 15 기본의 문서: https://grand-distance-04e.notion.site/Index-Explain-13c95f36f229805ab893e50b92ba412e
+- Step 16 설계 문서: https://grand-distance-04e.notion.site/13c95f36f229808e97cee32642a0fb8c?pvs=74
