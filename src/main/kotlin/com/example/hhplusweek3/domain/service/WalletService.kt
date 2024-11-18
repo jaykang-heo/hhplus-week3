@@ -14,12 +14,12 @@ class WalletService(
     fun add(
         amount: Long,
         queueToken: String,
-    ) {
+    ): Wallet {
         val wallet =
             walletRepository.findByQueueToken(queueToken)
                 ?: Wallet(0, queueToken)
         wallet.balance += amount
-        walletRepository.save(wallet)
+        return walletRepository.save(wallet)
     }
 
     fun redeem(

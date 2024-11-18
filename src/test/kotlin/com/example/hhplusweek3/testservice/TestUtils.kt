@@ -19,6 +19,7 @@ import com.example.hhplusweek3.repository.jpa.PaymentEntityJpaRepository
 import com.example.hhplusweek3.repository.jpa.WalletEntityJpaRepository
 import com.example.hhplusweek3.repository.model.ConcertSeatEntity
 import com.example.hhplusweek3.repository.redis.ReservationEntityRepository
+import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Service
+@Transactional
 class TestUtils(
     private val concertSeatEntityJpaRepository: ConcertSeatEntityJpaRepository,
     private val reservationFacade: ReservationFacade,
@@ -130,6 +132,7 @@ class TestUtils(
         }
     }
 
+    @Transactional
     @CacheEvict(
         cacheNames = [
             "concertSeats",

@@ -5,11 +5,18 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import java.time.Instant
 
 @Entity
-@Table(name = "concert_seats")
+@Table(
+    name = "concert_seats",
+    indexes = [
+        Index(name = "idx_concert_seats_date", columnList = "dateUtc"),
+        Index(name = "idx_concert_seats_date_seat", columnList = "dateUtc,seatNumber"),
+    ],
+)
 class ConcertSeatEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

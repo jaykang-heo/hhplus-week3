@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import java.time.Instant
@@ -15,8 +16,11 @@ import java.time.Instant
     uniqueConstraints = [
         UniqueConstraint(
             name = "uk_payments_reservation_id",
-            columnNames = [ "reservation_id"],
+            columnNames = ["reservation_id"],
         ),
+    ],
+    indexes = [
+        Index(name = "idx_payments_created_time", columnList = "createdTimeUtc"),
     ],
 )
 class PaymentEntity(
