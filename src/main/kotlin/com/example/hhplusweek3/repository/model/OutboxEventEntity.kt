@@ -1,6 +1,7 @@
 package com.example.hhplusweek3.repository.model
 
 import com.example.hhplusweek3.domain.model.OutboxEvent
+import com.example.hhplusweek3.domain.model.OutboxEventStatus
 import com.example.hhplusweek3.domain.model.OutboxEventType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -23,7 +24,11 @@ class OutboxEventEntity(
     val payload: String,
     val createdAt: Instant,
     var processedAt: Instant?,
-    val processed: Boolean,
+    @Enumerated(EnumType.STRING)
+    var status: OutboxEventStatus,
+    var retryCount: Int = 0,
+    var lastRetryAt: Instant?,
+    var lastFailureReason: String?,
 ) {
     fun toModel(): OutboxEvent =
         OutboxEvent(
@@ -33,7 +38,10 @@ class OutboxEventEntity(
             payload,
             createdAt,
             processedAt,
-            processed,
+            status,
+            retryCount,
+            lastRetryAt,
+            lastFailureReason,
         )
 
     constructor(event: OutboxEvent) : this(
@@ -44,6 +52,9 @@ class OutboxEventEntity(
         event.payload,
         event.createdAt,
         event.processedAt,
-        event.processed,
+        event.status,
+        event.retryCount,
+        event.lastRetryAt,
+        event.lastFailureReason,
     )
 }

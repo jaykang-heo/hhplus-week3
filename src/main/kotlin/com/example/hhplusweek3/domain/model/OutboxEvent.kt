@@ -11,12 +11,20 @@ data class OutboxEvent(
     val payload: String,
     val createdAt: Instant,
     var processedAt: Instant?,
-    var processed: Boolean,
+    var status: OutboxEventStatus,
+    var retryCount: Int = 0,
+    var lastRetryAt: Instant?,
+    var lastFailureReason: String?,
 ) {
     fun markProcessed(): OutboxEvent {
-        this.processed = false
+        this.status = OutboxEventStatus.PROCESSED
         this.processedAt = Instant.now()
         return this
+    }
+
+    fun incrementRetryCount() {
+        retryCount++
+        lastRetryAt = Instant.now()
     }
 
     constructor(payment: Payment, objectMapper: ObjectMapper) : this(
@@ -26,6 +34,9 @@ data class OutboxEvent(
         objectMapper.writeValueAsString(payment),
         Instant.now(),
         null,
-        false,
+        OutboxEventStatus.PENDING,
+        0,
+        null,
+        null,
     )
 }
