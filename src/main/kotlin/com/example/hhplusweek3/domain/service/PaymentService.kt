@@ -23,7 +23,7 @@ class PaymentService(
             }
         } ?: throw AcquireLockFailedException("PaymentFacade::${command.queueToken}, ${command.reservationId}")
 
-    private fun publish(payment: Payment) {
+    fun publish(payment: Payment) {
         eventPublisher.publishEvent(PaymentCreatedEvent(payment))
     }
 }

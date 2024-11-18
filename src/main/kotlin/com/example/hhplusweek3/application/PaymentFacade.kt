@@ -2,7 +2,6 @@ package com.example.hhplusweek3.application
 
 import com.example.hhplusweek3.domain.command.CreatePaymentCommand
 import com.example.hhplusweek3.domain.model.Payment
-import com.example.hhplusweek3.domain.port.PaymentRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
 import com.example.hhplusweek3.domain.port.TransactionRepository
 import com.example.hhplusweek3.domain.service.PaymentService
@@ -15,7 +14,6 @@ class PaymentFacade(
     private val paymentService: PaymentService,
     private val walletService: WalletService,
     private val createPaymentCommandValidator: CreatePaymentCommandValidator,
-    private val paymentRepository: PaymentRepository,
     private val reservationRepository: ReservationRepository,
     private val transactionRepository: TransactionRepository,
 ) {
@@ -26,7 +24,8 @@ class PaymentFacade(
             val payment = Payment(command, amount)
             transactionRepository.transactional {
                 walletService.redeem(payment.amount, command.queueToken)
-                paymentRepository.save(payment)
+                paymentService.publish(payment)
+                payment
             }
         }
 }
