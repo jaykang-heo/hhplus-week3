@@ -33,6 +33,7 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.redisson:redisson-spring-boot-starter:3.27.1")
     implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.springframework.retry:spring-retry")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
