@@ -7,6 +7,7 @@ import com.example.hhplusweek3.domain.model.Payment
 import com.example.hhplusweek3.domain.model.Reservation
 import com.example.hhplusweek3.domain.port.PaymentRepository
 import com.example.hhplusweek3.domain.port.ReservationRepository
+import com.example.hhplusweek3.domain.port.TransactionRepository
 import com.example.hhplusweek3.domain.service.PaymentService
 import com.example.hhplusweek3.domain.service.WalletService
 import com.example.hhplusweek3.domain.validator.CreatePaymentCommandValidator
@@ -31,6 +32,7 @@ class PaymentFacadeTest {
     private val mockCreatePaymentCommandValidator = mock(CreatePaymentCommandValidator::class.java)
     private val mockWalletService = mock(WalletService::class.java)
     private val mockPaymentService = mock(PaymentService::class.java)
+    private val mockTransactionRepository: TransactionRepository = mock(TransactionRepository::class.java)
     private val sut =
         PaymentFacade(
             mockPaymentService,
@@ -38,6 +40,7 @@ class PaymentFacadeTest {
             mockCreatePaymentCommandValidator,
             mockPaymentRepository,
             mockReservationRepository,
+            mockTransactionRepository,
         )
 
     @Test
